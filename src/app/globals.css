@@ -1,0 +1,100 @@
+﻿@import "tailwindcss";
+
+:root {
+  --background: #070b12;
+  --foreground: #f7fbff;
+  --muted: #8f9bae;
+  --panel: rgba(13, 20, 32, 0.78);
+  --panel-strong: rgba(18, 28, 45, 0.92);
+  --border: rgba(155, 181, 214, 0.18);
+  --teal: #39f5d4;
+  --coral: #ff7a59;
+  --violet: #9d7cff;
+  --amber: #ffd166;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  min-height: 100vh;
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+
+body::before {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  content: "";
+  background:
+    linear-gradient(132deg, rgba(57, 245, 212, 0.12), transparent 28%),
+    linear-gradient(232deg, rgba(255, 122, 89, 0.1), transparent 31%),
+    linear-gradient(180deg, #070b12 0%, #0a1020 46%, #060a12 100%);
+}
+
+body::after {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  content: "";
+  opacity: 0.22;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+  background-size: 72px 72px;
+  mask-image: linear-gradient(to bottom, black, transparent 78%);
+}
+
+::selection {
+  color: #061018;
+  background: var(--teal);
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+
+.glass-panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.32);
+  backdrop-filter: blur(18px);
+}
+
+.pixel-grid {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 18px 18px;
+}
+
+.code-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(57, 245, 212, 0.34) transparent;
+}
+
+.code-scroll::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.code-scroll::-webkit-scrollbar-thumb {
+  background: rgba(57, 245, 212, 0.34);
+  border-radius: 999px;
+}
