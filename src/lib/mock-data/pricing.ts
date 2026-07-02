@@ -9,7 +9,7 @@ export type PricingPlan = {
 export const pricingPlans: PricingPlan[] = [
   {
     name: "Free",
-    price: "$0",
+    price: "0 SOL",
     description: "Explore templates and prototype with static mock projects.",
     features: [
       "25 AI generations",
@@ -21,7 +21,7 @@ export const pricingPlans: PricingPlan[] = [
   },
   {
     name: "Starter",
-    price: "$12",
+    price: "12 SOL",
     description: "For solo builders validating playable ideas faster.",
     features: [
       "300 AI generations",
@@ -33,7 +33,7 @@ export const pricingPlans: PricingPlan[] = [
   },
   {
     name: "Creator",
-    price: "$29",
+    price: "29 SOL",
     description: "For creators shipping polished game prototypes weekly.",
     featured: true,
     features: [
@@ -46,7 +46,7 @@ export const pricingPlans: PricingPlan[] = [
   },
   {
     name: "Pro",
-    price: "$79",
+    price: "79 SOL",
     description: "For studios planning collaborative pipelines and exports.",
     features: [
       "8,000 AI generations",

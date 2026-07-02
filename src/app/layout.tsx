@@ -29,8 +29,8 @@ export const metadata: Metadata = {
     "BerryBox",
   ],
   icons: {
-    icon: "/berrybox.png",
-    shortcut: "/berrybox.png",
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
     apple: "/berrybox.png",
   },
   openGraph: {
