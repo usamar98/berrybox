@@ -16,7 +16,7 @@ export const featuredGames: GalleryGame[] = [
     likes: 842,
     plays: 12840,
     accent: "teal",
-    image: "/game-cards/neon-orchard.svg",
+    image: "/game-cards/neon-orchard.png",
   },
   {
     title: "Byte Runner",
@@ -25,7 +25,7 @@ export const featuredGames: GalleryGame[] = [
     likes: 641,
     plays: 9210,
     accent: "coral",
-    image: "/game-cards/byte-runner.svg",
+    image: "/game-cards/byte-runner.png",
   },
   {
     title: "Moonlit Casefile",
@@ -34,7 +34,7 @@ export const featuredGames: GalleryGame[] = [
     likes: 504,
     plays: 7750,
     accent: "violet",
-    image: "/game-cards/moonlit-casefile.svg",
+    image: "/game-cards/moonlit-casefile.png",
   },
 ];
 

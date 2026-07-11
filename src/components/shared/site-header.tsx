@@ -10,9 +10,9 @@ import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/templates", label: "Templates" },
-  { href: "/gallery", label: "Gallery" },
-  { href: "/pricing", label: "Pricing" },
-  { href: "/roadmap", label: "Roadmap" },
+  // { href: "/gallery", label: "Gallery" },
+  // { href: "/pricing", label: "Pricing" },
+  // { href: "/roadmap", label: "Roadmap" },
 ];
 
 export function SiteHeader() {

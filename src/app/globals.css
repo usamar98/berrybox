@@ -35,32 +35,6 @@ body {
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
 
-body::before {
-  position: fixed;
-  inset: 0;
-  z-index: -2;
-  pointer-events: none;
-  content: "";
-  background:
-    linear-gradient(132deg, rgba(57, 245, 212, 0.12), transparent 28%),
-    linear-gradient(232deg, rgba(255, 122, 89, 0.1), transparent 31%),
-    linear-gradient(180deg, #070b12 0%, #0a1020 46%, #060a12 100%);
-}
-
-body::after {
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  content: "";
-  opacity: 0.22;
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
-  background-size: 72px 72px;
-  mask-image: linear-gradient(to bottom, black, transparent 78%);
-}
-
 ::selection {
   color: #061018;
   background: var(--teal);

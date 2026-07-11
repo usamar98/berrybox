@@ -25,9 +25,7 @@ import { SectionHeading } from "@/components/shared/section-heading";
 import { ToastButton } from "@/components/shared/toast-button";
 import { useToast } from "@/components/shared/toast";
 import { GameCard } from "@/components/gallery/game-card";
-import { PricingCard } from "@/components/pricing/pricing-card";
 import { featuredGames } from "@/lib/mock-data/games";
-import { pricingPlans } from "@/lib/mock-data/pricing";
 import { templates } from "@/lib/mock-data/templates";
 import { cn } from "@/lib/utils";
 
@@ -122,7 +120,6 @@ export function LandingPage() {
       <TemplateLibraryPreview />
       <CapabilityRail />
       <FeaturedGames />
-      <PricingPreview />
       <FaqSection />
     </PageShell>
   );
@@ -345,28 +342,6 @@ function FeaturedGames() {
           {featuredGames.map((game, index) => (
             <Reveal key={game.title} delay={index * 0.08}>
               <GameCard game={game} />
-            </Reveal>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function PricingPreview() {
-  return (
-    <section className="px-4 py-16 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl">
-        <Reveal>
-          <SectionHeading
-            title="Pricing preview"
-            description="Static plan cards model how credits, private projects, asset generation, and commercial usage could be packaged later."
-          />
-        </Reveal>
-        <div className="grid gap-4 lg:grid-cols-4">
-          {pricingPlans.map((plan, index) => (
-            <Reveal key={plan.name} delay={index * 0.05}>
-              <PricingCard plan={plan} />
             </Reveal>
           ))}
         </div>

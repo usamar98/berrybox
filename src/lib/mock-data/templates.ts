@@ -24,7 +24,7 @@ export const templates: GameTemplate[] = [
     difficulty: "Intermediate",
     description: "Jump arcs, hazards, pickups, checkpoints, and level flow.",
     accent: "coral",
-    image: "/game-cards/platformer-game.svg",
+    image: "/game-cards/platformer-game.png",
   },
   {
     title: "Visual Novel",
@@ -32,7 +32,7 @@ export const templates: GameTemplate[] = [
     difficulty: "Beginner",
     description: "Branching choices, character portraits, and scene scripting.",
     accent: "violet",
-    image: "/game-cards/visual-novel.svg",
+    image: "/game-cards/visual-novel.png",
   },
   {
     title: "Racing Game",
@@ -40,7 +40,7 @@ export const templates: GameTemplate[] = [
     difficulty: "Intermediate",
     description: "Track lanes, timers, boost pads, and rival drivers.",
     accent: "amber",
-    image: "/game-cards/racing-game.svg",
+    image: "/game-cards/racing-game.png",
   },
   {
     title: "Puzzle Game",
@@ -48,7 +48,7 @@ export const templates: GameTemplate[] = [
     difficulty: "Beginner",
     description: "Tile swaps, rules, goals, and satisfying win states.",
     accent: "teal",
-    image: "/game-cards/puzzle-game.svg",
+    image: "/game-cards/puzzle-game.png",
   },
   {
     title: "3D World Explorer",
@@ -56,7 +56,7 @@ export const templates: GameTemplate[] = [
     difficulty: "Advanced",
     description: "A navigable world shell with cameras, props, and portals.",
     accent: "violet",
-    image: "/game-cards/3d-world-explorer.svg",
+    image: "/game-cards/3d-world-explorer.png",
   },
   {
     title: "AI NPC Story Game",
@@ -64,7 +64,7 @@ export const templates: GameTemplate[] = [
     difficulty: "Advanced",
     description: "NPC memory stubs, quest hooks, and branching dialogue.",
     accent: "coral",
-    image: "/game-cards/ai-npc-story-game.svg",
+    image: "/game-cards/ai-npc-story-game.png",
   },
   {
     title: "Arcade Shooter",
@@ -72,7 +72,7 @@ export const templates: GameTemplate[] = [
     difficulty: "Intermediate",
     description: "Enemy waves, scoring, powerups, and boss patterns.",
     accent: "amber",
-    image: "/game-cards/arcade-shooter.svg",
+    image: "/game-cards/arcade-shooter.png",
   },
 ];
 

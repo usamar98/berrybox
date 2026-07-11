@@ -4,9 +4,9 @@ import { Workflow } from "lucide-react";
 
 const footerLinks = [
   { href: "/templates", label: "Templates" },
-  { href: "/gallery", label: "Gallery" },
-  { href: "/pricing", label: "Pricing" },
-  { href: "/roadmap", label: "Roadmap" },
+  // { href: "/gallery", label: "Gallery" },
+  // { href: "/pricing", label: "Pricing" },
+  // { href: "/roadmap", label: "Roadmap" },
   { href: "/editor", label: "Editor" },
 ];
 
