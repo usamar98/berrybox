@@ -1,4 +1,4 @@
-﻿import Image from "next/image";
+import Image from "next/image";
 import Link from "next/link";
 import { Workflow } from "lucide-react";
 
@@ -16,13 +16,13 @@ export function SiteFooter() {
       <div className="mx-auto grid w-full max-w-7xl gap-8 px-4 py-10 sm:px-6 md:grid-cols-[1.4fr_1fr] lg:px-8">
         <div>
           <div className="mb-4 flex items-center gap-3 text-white">
-            <span className="grid h-10 w-10 place-items-center overflow-hidden rounded-xl border border-orange-300/25 bg-white/[0.06]">
+            <span className="grid h-10 w-10 place-items-center overflow-hidden rounded-xl">
               <Image
                 src="/berrybox.png"
                 alt="BerryBox logo"
                 width={40}
                 height={40}
-                className="h-full w-full object-contain p-1"
+                className="h-full w-full object-contain"
               />
             </span>
             <span className="font-black">BerryBox</span>
@@ -51,3 +51,4 @@ export function SiteFooter() {
     </footer>
   );
 }
+

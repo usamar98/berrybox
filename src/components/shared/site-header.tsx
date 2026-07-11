@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -23,14 +23,14 @@ export function SiteHeader() {
     <header className="sticky top-0 z-40 border-b border-white/10 bg-[#070b12]/80 backdrop-blur-xl">
       <div className="mx-auto flex h-[4.5rem] w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link href="/" className="flex items-center gap-3">
-          <span className="grid h-11 w-11 place-items-center overflow-hidden rounded-xl border border-teal-300/25 bg-white/[0.06] shadow-[0_0_26px_rgba(57,245,212,0.18)]">
+          <span className="grid h-11 w-11 place-items-center overflow-hidden rounded-xl">
             <Image
               src="/berrybox.png"
               alt="BerryBox logo"
               width={44}
               height={44}
               priority
-              className="h-full w-full object-contain p-1"
+              className="h-full w-full object-contain"
             />
           </span>
           <span className="text-base font-black tracking-wide text-white">
@@ -105,3 +105,4 @@ export function SiteHeader() {
     </header>
   );
 }
+

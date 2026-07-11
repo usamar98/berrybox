@@ -1,4 +1,4 @@
-﻿export type TemplateDifficulty = "Beginner" | "Intermediate" | "Advanced";
+export type TemplateDifficulty = "Beginner" | "Intermediate" | "Advanced";
 
 export type GameTemplate = {
   title: string;
@@ -16,7 +16,7 @@ export const templates: GameTemplate[] = [
     difficulty: "Beginner",
     description: "Dialogue, quests, collectibles, and a top-down forest map.",
     accent: "teal",
-    image: "/game-cards/2d-rpg-adventure.svg",
+    image: "/game-cards/2d-rpg-adventure.png",
   },
   {
     title: "Platformer Game",
@@ -75,3 +75,4 @@ export const templates: GameTemplate[] = [
     image: "/game-cards/arcade-shooter.svg",
   },
 ];
+
