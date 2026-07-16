@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import Link from "next/link";
-import { FormEvent, useState } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   Bot,
@@ -15,7 +15,7 @@ import {
   Sparkles,
   WandSparkles,
 } from "lucide-react";
-import { buttonVariants, Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Panel } from "@/components/ui/panel";
 import { GameImage } from "@/components/shared/game-image";
@@ -23,7 +23,6 @@ import { PageShell } from "@/components/shared/page-shell";
 import { Reveal } from "@/components/shared/reveal";
 import { SectionHeading } from "@/components/shared/section-heading";
 import { ToastButton } from "@/components/shared/toast-button";
-import { useToast } from "@/components/shared/toast";
 import { GameCard } from "@/components/gallery/game-card";
 import { featuredGames } from "@/lib/mock-data/games";
 import { templates } from "@/lib/mock-data/templates";
@@ -126,36 +125,26 @@ export function LandingPage() {
 }
 
 function Hero() {
-  const { showToast } = useToast();
   const [prompt, setPrompt] = useState("");
 
-  function onSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    showToast(
-      prompt.trim()
-        ? "Prompt captured for the future AI pipeline"
-        : "Describe a game idea first",
-    );
-  }
-
   return (
-    <section className="relative overflow-hidden px-4 py-20 text-center sm:px-6 lg:px-8">
+    <section className="relative isolate min-h-[100svh] w-full overflow-hidden px-4 py-20 text-center sm:px-6 lg:px-8">
+      <div
+        aria-hidden="true"
+        className="hero-red-backdrop -z-20"
+      />
+      <div aria-hidden="true" className="hero-red-floor -z-10" />
       <motion.div
         initial={{ opacity: 0, y: 18 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
-        className="mx-auto flex max-w-4xl flex-col items-center"
+        className="relative z-10 mx-auto flex max-w-4xl flex-col items-center"
       >
-        <h1 className="text-balance text-5xl font-black tracking-tight text-white sm:text-6xl lg:text-7xl">
+        <h5 className="text-balance text-5xl font-black tracking-tight text-white sm:text-6xl lg:text-7xl">
           Build playable games from a prompt
-        </h1>
-        <p className="mx-auto mt-6 max-w-3xl text-lg leading-8 text-slate-300">
-          BerryBox is a static MVP for an AI game maker: explore templates,
-          open a mock editor, preview sample games, and map the future
-          generation pipeline without connecting real services yet.
-        </p>
+        </h5>
 
-        <form onSubmit={onSubmit} className="mx-auto mt-10 w-full max-w-3xl">
+        <div className="mx-auto mt-10 w-full max-w-3xl">
           <Panel className="p-3 text-left">
             <label htmlFor="game-prompt" className="sr-only">
               Game prompt
@@ -167,13 +156,16 @@ function Hero() {
               placeholder="Describe the game you want to create…"
               className="min-h-32 w-full resize-none rounded-lg border border-white/10 bg-[#090f1a]/90 p-4 text-base leading-7 text-white outline-none transition placeholder:text-slate-500 focus:border-teal-200/45"
             />
-            <div className="mt-3 flex flex-col justify-center gap-3 sm:flex-row">
+            <div className="mt-3 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
               <Link
                 href="/editor"
-                className={cn(buttonVariants({ variant: "primary", size: "lg" }))}
+                className={cn(
+                  buttonVariants({ variant: "primary", size: "lg" }),
+                  "w-full sm:w-auto",
+                )}
               >
                 <Rocket className="h-5 w-5" />
-                Start Creating
+                Creating
               </Link>
               <Link
                 href="/templates"
@@ -184,12 +176,9 @@ function Hero() {
                 <Boxes className="h-5 w-5" />
                 Explore Templates
               </Link>
-              <Button type="submit" variant="ghost" size="lg">
-                Queue Prompt
-              </Button>
             </div>
           </Panel>
-        </form>
+        </div>
       </motion.div>
     </section>
   );
