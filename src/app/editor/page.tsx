@@ -1,13 +1,21 @@
 ﻿import type { Metadata } from "next";
-import { EditorPage } from "@/components/editor/editor-page";
+import { Builder } from "@/components/studio/builder";
 
 export const metadata: Metadata = {
-  title: "Mock Editor",
+  title: "AI Game Builder alpha",
   description:
-    "Open the BerryBox static mock editor with AI chat, game preview, file tree, code preview, and asset tray.",
+    "Customize a playable 3D template with AI, manual game settings, and browser-local project saving.",
 };
 
-export default function Page() {
-  return <EditorPage />;
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<{ prompt?: string | string[]; template?: string; project?: string }>;
+}) {
+  const params = await searchParams;
+  const rawPrompt = Array.isArray(params.prompt) ? params.prompt[0] : params.prompt;
+  const initialPrompt = rawPrompt?.trim().slice(0, 500) ?? "";
+
+  return <Builder key={(params.project ?? params.template ?? "new") + initialPrompt} templateId={params.template} projectId={params.project} initialPrompt={initialPrompt} />;
 }
 

@@ -2,6 +2,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import { ToastProvider } from "@/components/shared/toast";
 import "./globals.css";
+import "./studio.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,16 +17,16 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://berrybox.local"),
   title: {
-    default: "BerryBox - Static AI Game Maker SaaS",
+    default: "BerryBox - AI Game Maker",
     template: "%s | BerryBox",
   },
   description:
-    "A polished static MVP for an AI game maker SaaS with templates, mock editor, gallery, pricing, and roadmap pages.",
+    "Create playable 3D games with templates and an AI-assisted builder. Your next game starts at BerryBox.",
   keywords: [
     "AI game maker",
     "game templates",
-    "mock game editor",
-    "static SaaS frontend",
+    "AI game editor",
+    "playable game generator",
     "BerryBox",
   ],
   icons: {
@@ -36,7 +37,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "BerryBox",
     description:
-      "Describe a game idea, explore templates, preview generated games, and open a mock AI editor.",
+      "Describe a game idea, generate a playable configuration, and tune it with the AI editor.",
     type: "website",
     images: ["/berrybox.png"],
   },
@@ -50,6 +51,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      data-scroll-behavior="smooth"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">

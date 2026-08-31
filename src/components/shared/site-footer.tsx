@@ -3,11 +3,12 @@ import Link from "next/link";
 import { Workflow } from "lucide-react";
 
 const footerLinks = [
+  { href: "/", label: "Workspace" },
   { href: "/templates", label: "Templates" },
   // { href: "/gallery", label: "Gallery" },
   // { href: "/pricing", label: "Pricing" },
   // { href: "/roadmap", label: "Roadmap" },
-  { href: "/editor", label: "Editor" },
+  { href: "/workflow", label: "What's next" },
 ];
 
 export function SiteFooter() {
@@ -28,8 +29,8 @@ export function SiteFooter() {
             <span className="font-black">BerryBox</span>
           </div>
           <p className="max-w-xl text-sm leading-6 text-slate-400">
-            Static MVP only. Built with mock data, clean interfaces, and no real
-            AI, auth, database, payments, or deployment calls.
+            A little space for big game ideas. Templates and the 3D builder are
+            in alpha. Character creation and the connected workflow are coming soon.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3 md:justify-end">
@@ -44,7 +45,7 @@ export function SiteFooter() {
           ))}
           <span className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-sm font-semibold text-slate-400">
             <Workflow className="h-4 w-4" />
-            Future-ready
+            Made for creators
           </span>
         </div>
       </div>

@@ -9,7 +9,9 @@ import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { href: "/templates", label: "Templates" },
+  { href: "/", label: "Workspace" },
+  { href: "/templates", label: "Templates + AI Builder" },
+  { href: "/characters", label: "Characters" },
   // { href: "/gallery", label: "Gallery" },
   // { href: "/pricing", label: "Pricing" },
   // { href: "/roadmap", label: "Roadmap" },
@@ -61,16 +63,17 @@ export function SiteHeader() {
         <div className="hidden items-center gap-3 md:flex">
           <Link
             href="/editor"
-            className={cn(buttonVariants({ variant: "primary", size: "sm" }))}
+            className="studio-primary !py-2.5"
           >
             <Bot className="h-4 w-4" />
-            Open Editor
+            Open builder
           </Link>
         </div>
 
         <button
           type="button"
           aria-label="Toggle navigation"
+          aria-expanded={open}
           onClick={() => setOpen((value) => !value)}
           className="grid h-10 w-10 place-items-center rounded-lg border border-white/10 bg-white/[0.06] text-white md:hidden"
         >
@@ -97,7 +100,7 @@ export function SiteHeader() {
               className={cn(buttonVariants({ variant: "primary" }), "mt-2")}
             >
               <Bot className="h-4 w-4" />
-              Open Editor
+              Open builder
             </Link>
           </div>
         </div>
