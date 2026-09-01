@@ -5,7 +5,7 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
-export default function ModelViewer({ modelUrl }: { modelUrl?: string }) {
+export default function ModelViewer({ modelUrl, variant = "template" }: { modelUrl?: string; variant?: "template" | "character" }) {
   const hostRef = useRef<HTMLDivElement>(null);
   const messageRef = useRef<HTMLParagraphElement>(null);
 
@@ -26,7 +26,7 @@ export default function ModelViewer({ modelUrl }: { modelUrl?: string }) {
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.15;
-    renderer.domElement.setAttribute("aria-label", "Interactive 3D model viewer");
+    renderer.domElement.setAttribute("aria-label", variant === "character" ? "Interactive 3D character viewer" : "Interactive 3D model viewer");
     renderer.domElement.setAttribute("role", "img");
     host.appendChild(renderer.domElement);
 
@@ -47,6 +47,8 @@ export default function ModelViewer({ modelUrl }: { modelUrl?: string }) {
     scene.add(grid);
 
     let active = true;
+    let mixer: THREE.AnimationMixer | undefined;
+    const timer = new THREE.Timer();
     if (modelUrl) {
       if (message) message.textContent = "Loading generated GLB…";
       const loader = new GLTFLoader();
@@ -66,7 +68,13 @@ export default function ModelViewer({ modelUrl }: { modelUrl?: string }) {
         controls.target.set(0, 0, 0);
         controls.maxDistance = radius * 8;
         controls.update();
-        if (message) message.textContent = "Drag to orbit · Scroll to zoom · Right-drag to pan";
+        if (gltf.animations.length) {
+          mixer = new THREE.AnimationMixer(model);
+          mixer.clipAction(gltf.animations[0]).play();
+        }
+        if (message) message.textContent = gltf.animations.length
+          ? "Animation playing · Drag to orbit · Scroll to zoom"
+          : "Drag to orbit · Scroll to zoom · Right-drag to pan";
       }, undefined, () => {
         if (active && message) message.textContent = "The GLB could not be loaded. Download it and verify the provider URL has not expired.";
       });
@@ -74,19 +82,46 @@ export default function ModelViewer({ modelUrl }: { modelUrl?: string }) {
       const material = new THREE.MeshStandardMaterial({ color: 0x6f263f, roughness: 0.48, metalness: 0.2 });
       const accent = new THREE.MeshStandardMaterial({ color: 0xf04d7a, roughness: 0.32, metalness: 0.35 });
       const demo = new THREE.Group();
-      const base = new THREE.Mesh(new THREE.CylinderGeometry(1.45, 1.7, 0.38, 8), material);
-      base.position.y = 0.19;
-      const arch = new THREE.Mesh(new THREE.TorusGeometry(1.12, 0.22, 16, 64, Math.PI), accent);
-      arch.rotation.z = Math.PI / 2;
-      arch.position.y = 1.2;
-      const left = new THREE.Mesh(new THREE.BoxGeometry(0.44, 1.7, 0.48), material);
-      left.position.set(-1.1, 0.95, 0);
-      const right = left.clone();
-      right.position.x = 1.1;
-      demo.add(base, arch, left, right);
+      if (variant === "character") {
+        const head = new THREE.Mesh(new THREE.SphereGeometry(0.44, 32, 24), accent);
+        head.position.y = 3.05;
+        const torso = new THREE.Mesh(new THREE.CapsuleGeometry(0.55, 1.15, 8, 20), material);
+        torso.position.y = 1.95;
+        const hips = new THREE.Mesh(new THREE.BoxGeometry(1.05, 0.42, 0.58), accent);
+        hips.position.y = 1.12;
+        const limbGeometry = new THREE.CapsuleGeometry(0.16, 1.05, 6, 14);
+        const leftArm = new THREE.Mesh(limbGeometry, material);
+        leftArm.position.set(-0.82, 2.03, 0);
+        leftArm.rotation.z = -0.18;
+        const rightArm = leftArm.clone();
+        rightArm.position.x = 0.82;
+        rightArm.rotation.z = 0.18;
+        const leftLeg = new THREE.Mesh(limbGeometry, material);
+        leftLeg.position.set(-0.3, 0.35, 0);
+        const rightLeg = leftLeg.clone();
+        rightLeg.position.x = 0.3;
+        const halo = new THREE.Mesh(new THREE.TorusGeometry(1.65, 0.025, 8, 64), accent);
+        halo.rotation.x = Math.PI / 2;
+        halo.position.y = -0.26;
+        demo.add(head, torso, hips, leftArm, rightArm, leftLeg, rightLeg, halo);
+        controls.target.set(0, 1.45, 0);
+        camera.position.set(4.2, 3.1, 6.2);
+        if (message) message.textContent = "Your rigged character will appear here · Drag to orbit";
+      } else {
+        const base = new THREE.Mesh(new THREE.CylinderGeometry(1.45, 1.7, 0.38, 8), material);
+        base.position.y = 0.19;
+        const arch = new THREE.Mesh(new THREE.TorusGeometry(1.12, 0.22, 16, 64, Math.PI), accent);
+        arch.rotation.z = Math.PI / 2;
+        arch.position.y = 1.2;
+        const left = new THREE.Mesh(new THREE.BoxGeometry(0.44, 1.7, 0.48), material);
+        left.position.set(-1.1, 0.95, 0);
+        const right = left.clone();
+        right.position.x = 1.1;
+        demo.add(base, arch, left, right);
+        controls.target.set(0, 0.8, 0);
+        if (message) message.textContent = "Generated GLB models appear here · Drag to test the viewer";
+      }
       scene.add(demo);
-      controls.target.set(0, 0.8, 0);
-      if (message) message.textContent = "Generated GLB models appear here · Drag to test the viewer";
     }
 
     const resize = () => {
@@ -100,7 +135,9 @@ export default function ModelViewer({ modelUrl }: { modelUrl?: string }) {
     observer.observe(host);
     resize();
 
-    renderer.setAnimationLoop(() => {
+    renderer.setAnimationLoop((timestamp) => {
+      timer.update(timestamp);
+      mixer?.update(timer.getDelta());
       controls.update();
       renderer.render(scene, camera);
     });
@@ -122,7 +159,7 @@ export default function ModelViewer({ modelUrl }: { modelUrl?: string }) {
       renderer.dispose();
       renderer.domElement.remove();
     };
-  }, [modelUrl]);
+  }, [modelUrl, variant]);
 
   return (
     <div className="bb-model-viewer">

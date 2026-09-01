@@ -35,10 +35,10 @@ const features = [
     icon: UserRound,
     number: "02",
     title: "Create a 3D character using a prompt",
-    copy: "A game-ready character pipeline for model generation, rigging, and animation is planned next.",
-    status: "COMING SOON",
+    copy: "Generate an original textured humanoid, auto-rig it, preview its animation, and download the GLB or FBX.",
+    status: "AVAILABLE NOW",
     href: "/characters",
-    active: false,
+    active: true,
   },
   {
     icon: Gamepad2,
@@ -58,8 +58,8 @@ const sources = [
 ];
 
 const faqs = [
-  ["What can I generate right now?", "The enabled feature creates individual 3D template assets through a server-configured fal text-to-3D model. Character generation and complete prompt-to-game generation remain locked as coming soon."],
-  ["Which format does the generator return?", "The current pipeline requests a GLB file, a compact glTF format suited to browsers and compatible with common 3D tools and game engines."],
+  ["What can I generate right now?", "BerryBox can generate individual 3D template assets and original humanoid characters. Character output can include textured geometry, a humanoid rig, basic locomotion, and an animated GLB. Complete prompt-to-game generation remains coming soon."],
+  ["Which formats do the generators return?", "Both live workflows return browser-ready GLB files. The character workflow also exposes FBX when the selected fal model provides a rigged or animated FBX export."],
   ["How do I see a generated model?", "BerryBox includes an interactive Three.js viewer. When the selected fal model finishes, the GLB opens in the viewport automatically and can be orbited, zoomed, panned, or downloaded."],
   ["Where is the generated model stored?", "fal returns a hosted asset URL from the selected model endpoint. BerryBox does not permanently store the model in this release, so download completed assets you want to keep."],
   ["Which external APIs are prepared?", "A single fal gateway powers configurable 3D model endpoints. Add compatible text-to-3D model IDs in Vercel without adding another browser-side provider integration."],
@@ -149,7 +149,7 @@ export function BerryBoxHome() {
 
         <section className="bb-section bb-skills" id="features">
           <div className="bb-shell">
-            <SectionHeading eyebrow="THREE CREATOR TOOLS" title="One is live. Two are next." copy="BerryBox is focused on three prompt-based 3D workflows. Only template generation is enabled in this release." />
+            <SectionHeading eyebrow="THREE CREATOR TOOLS" title="Two are live. One is next." copy="Generate standalone 3D assets or build an original rigged character today. Complete prompt-to-game generation is the next workflow." />
             <div className="bb-skill-grid bb-three-features">
               {features.map(({ icon: Icon, number, title, copy, status, href, active }) => (
                 <Link className={active ? "bb-skill-card bb-feature-live" : "bb-skill-card bb-feature-locked"} href={href} key={title}>
@@ -188,8 +188,8 @@ export function BerryBoxHome() {
             <SectionHeading eyebrow="PROVIDER FOUNDATION" title="The right API for each 3D job." copy="Keys stay server-side and can be added in Vercel. The interface exposes only readiness—not credentials." />
             <div className="bb-foundation-grid">
               <article><span>LIVE</span><Cuboid size={27} /><h3>fal.ai gateway</h3><p>One server-side key for queued 3D generation and normalized GLB output.</p></article>
-              <article><span>CONFIGURABLE</span><UserRound size={27} /><h3>3D model catalog</h3><p>Add compatible fal text-to-3D endpoints through Vercel and expose them in the model selector.</p></article>
-              <article><span>SOON</span><Code2 size={27} /><h3>Expanded pipelines</h3><p>Future fal endpoints can power character, rigging, animation, image, and world-generation steps.</p></article>
+              <article><span>LIVE</span><UserRound size={27} /><h3>Character pipeline</h3><p>Generate textured humanoids with pose control, automatic rigging, animation, and engine-friendly exports.</p></article>
+              <article><span>CONFIGURABLE</span><Code2 size={27} /><h3>3D model catalog</h3><p>Add approved fal endpoints through Vercel while keeping every provider credential on the server.</p></article>
             </div>
           </div>
         </section>
@@ -214,7 +214,7 @@ export function BerryBoxHome() {
 
         <section className="bb-section bb-faq">
           <div className="bb-shell bb-faq-grid">
-            <div><p className="bb-kicker">QUESTIONS, ANSWERED</p><h2>Focused now.<br />Built to grow.</h2><p>The product status is intentionally clear: template generation is live; character and full-game generation are not enabled yet.</p><Link href="/templates" className="bb-text-link">Generate a template <ArrowRight size={16} /></Link></div>
+            <div><p className="bb-kicker">QUESTIONS, ANSWERED</p><h2>Focused now.<br />Built to grow.</h2><p>Template and character generation are live. The full prompt-to-game workflow remains clearly marked as coming soon.</p><Link href="/characters" className="bb-text-link">Create a character <ArrowRight size={16} /></Link></div>
             <div className="bb-accordion">
               {faqs.map(([question, answer], index) => <details key={question} open={index === 0}><summary><span>0{index + 1}</span>{question}<Plus size={18} /></summary><p>{answer}</p></details>)}
             </div>
@@ -224,10 +224,10 @@ export function BerryBoxHome() {
         <section className="bb-final-cta">
           <div className="bb-shell">
             <div className="bb-final-mark"><Box size={31} /></div>
-            <p className="bb-kicker">THE LIVE BERRYBOX TOOL</p>
-            <h2>Describe the asset.<br /><em>See it in 3D.</em></h2>
-            <p>Generate a template asset and inspect the GLB in your browser.</p>
-            <div><Link href="/templates" className="bb-button bb-button-primary">Open 3D generator <ArrowRight size={17} /></Link><a href="#sources" className="bb-button bb-button-ghost">Browse free sources</a></div>
+            <p className="bb-kicker">THE LIVE BERRYBOX TOOLS</p>
+            <h2>Describe the asset.<br /><em>Or create the hero.</em></h2>
+            <p>Generate a standalone 3D template or an original rigged character and inspect the GLB in your browser.</p>
+            <div><Link href="/characters" className="bb-button bb-button-primary">Create a character <ArrowRight size={17} /></Link><Link href="/templates" className="bb-button bb-button-ghost">Generate a template</Link></div>
           </div>
         </section>
       </div>

@@ -1,6 +1,7 @@
 import { ApiError, createFalClient } from "@fal-ai/client";
 
 const DEFAULT_TEMPLATE_MODEL = "fal-ai/hunyuan3d-v3/text-to-3d";
+const DEFAULT_CHARACTER_MODEL = "meshy/v7/text-to-3d";
 const MODEL_ID = /^(?:[a-z0-9][a-z0-9._-]*\/){1,5}[a-z0-9][a-z0-9._-]*$/i;
 const HTTP_URL = /^https?:\/\//i;
 const MAX_MODELS_PER_FEATURE = 12;
@@ -12,6 +13,21 @@ export type FalTask = {
   progress: number;
   modelUrl?: string;
   thumbnailUrl?: string;
+};
+
+export type CharacterGenerationOptions = {
+  poseMode: "a-pose" | "t-pose";
+  modelType: "standard" | "lowpoly";
+  heightMeters: number;
+  animate: boolean;
+};
+
+export type FalCharacterTask = FalTask & {
+  rigged: boolean;
+  animated: boolean;
+  riggedModelUrl?: string;
+  animationUrl?: string;
+  fbxUrl?: string;
 };
 
 export class FalProviderError extends Error {
@@ -35,7 +51,8 @@ export function configuredTemplateModels() {
 }
 
 export function configuredCharacterModels() {
-  return parseModels(process.env.FAL_3D_CHARACTER_MODELS);
+  const configured = parseModels(process.env.FAL_3D_CHARACTER_MODELS);
+  return configured.length ? configured : [DEFAULT_CHARACTER_MODEL];
 }
 
 export function configuredGameModels() {
@@ -48,8 +65,20 @@ export function templateGenerationAvailable() {
     && configuredTemplateModels().length > 0;
 }
 
+export function characterGenerationAvailable() {
+  return Boolean(process.env.FAL_KEY)
+    && process.env.BERRYBOX_ENABLE_3D_CHARACTER_GENERATION === "true"
+    && configuredCharacterModels().length > 0;
+}
+
 export function resolveTemplateModel(requested?: string) {
   const models = configuredTemplateModels();
+  if (!requested) return models[0];
+  return models.includes(requested) ? requested : undefined;
+}
+
+export function resolveCharacterModel(requested?: string) {
+  const models = configuredCharacterModels();
   if (!requested) return models[0];
   return models.includes(requested) ? requested : undefined;
 }
@@ -135,6 +164,19 @@ function extractThumbnailUrl(data: unknown) {
   return findUrl(data, /\.(?:png|jpe?g|webp)(?:$|\?)/i);
 }
 
+function preferredGlb(data: unknown, path: string[]) {
+  return fileUrl(readPath(data, path), /\.glb(?:$|\?)/i);
+}
+
+function extractCharacterOutput(data: unknown) {
+  const animationUrl = preferredGlb(data, ["animation_glb"]);
+  const riggedModelUrl = preferredGlb(data, ["rigged_character_glb"]);
+  const modelUrl = animationUrl || riggedModelUrl || extractModelUrl(data);
+  const fbxUrl = fileUrl(readPath(data, ["animation_fbx"]), /\.fbx(?:$|\?)/i)
+    || fileUrl(readPath(data, ["rigged_character_fbx"]), /\.fbx(?:$|\?)/i);
+  return { modelUrl, animationUrl, riggedModelUrl, fbxUrl };
+}
+
 function progressFromLogs(logs: Array<{ message: string }> | undefined) {
   if (!logs?.length) return 45;
   for (let index = logs.length - 1; index >= 0; index -= 1) {
@@ -170,6 +212,70 @@ export async function getTemplateTask(taskId: string, model: string, signal?: Ab
     }
     if (status.status === "IN_QUEUE") return { taskId, model, status: "PENDING", progress: 5 };
     return { taskId, model, status: "IN_PROGRESS", progress: progressFromLogs(status.logs) };
+  } catch (error) {
+    throw normalizeError(error);
+  }
+}
+
+export async function createCharacterTask(
+  prompt: string,
+  model: string,
+  options: CharacterGenerationOptions,
+  signal?: AbortSignal,
+) {
+  if (!resolveCharacterModel(model)) throw new FalProviderError(400, "The selected fal character model is not enabled for this deployment.");
+  const input = model === DEFAULT_CHARACTER_MODEL
+    ? {
+        prompt,
+        mode: "full",
+        model_type: options.modelType,
+        topology: "quad",
+        target_polycount: 24_000,
+        should_remesh: true,
+        symmetry_mode: "auto",
+        enable_pbr: true,
+        pose_mode: options.poseMode,
+        enable_prompt_expansion: true,
+        enable_rigging: true,
+        rigging_height_meters: options.heightMeters,
+        enable_animation: options.animate,
+        animation_action_id: 0,
+        enable_safety_checker: true,
+      }
+    : { prompt };
+
+  try {
+    const queued = await client().queue.submit(model, { input, abortSignal: signal });
+    return queued.request_id;
+  } catch (error) {
+    throw normalizeError(error);
+  }
+}
+
+export async function getCharacterTask(taskId: string, model: string, signal?: AbortSignal): Promise<FalCharacterTask> {
+  if (!resolveCharacterModel(model)) throw new FalProviderError(400, "The selected fal character model is not enabled for this deployment.");
+  try {
+    const falClient = client();
+    const status = await falClient.queue.status(model, { requestId: taskId, logs: true, abortSignal: signal });
+    if (status.status === "COMPLETED") {
+      const result = await falClient.queue.result(model, { requestId: taskId, abortSignal: signal });
+      const output = extractCharacterOutput(result.data);
+      if (!output.modelUrl) throw new FalProviderError(502, "The selected fal character model completed without a GLB output.");
+      return {
+        taskId,
+        model,
+        status: "SUCCEEDED",
+        progress: 100,
+        thumbnailUrl: extractThumbnailUrl(result.data),
+        rigged: Boolean(output.riggedModelUrl),
+        animated: Boolean(output.animationUrl),
+        ...output,
+      };
+    }
+    if (status.status === "IN_QUEUE") {
+      return { taskId, model, status: "PENDING", progress: 5, rigged: false, animated: false };
+    }
+    return { taskId, model, status: "IN_PROGRESS", progress: progressFromLogs(status.logs), rigged: false, animated: false };
   } catch (error) {
     throw normalizeError(error);
   }

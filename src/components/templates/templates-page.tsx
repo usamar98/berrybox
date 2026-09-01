@@ -189,7 +189,7 @@ export function TemplatesPage({ initialPrompt }: { initialPrompt: string }) {
           </div>
 
           <div className="bb-locked-products">
-            <Link href="/characters"><UserRound size={21} /><div><span>COMING SOON</span><h2>Create a 3D character using a prompt</h2><p>Configurable fal generation, rigging, and animation pipeline.</p></div><Lock size={17} /></Link>
+            <Link href="/characters"><UserRound size={21} /><div><span>AVAILABLE NOW</span><h2>Create a 3D character using a prompt</h2><p>Generate, auto-rig, animate, preview, and download an original game character.</p></div><CircleCheck size={17} /></Link>
             <Link href="/workflow"><Gamepad2 size={21} /><div><span>COMING SOON</span><h2>Create a 3D game using a prompt</h2><p>OpenAI game specification plus a playable Three.js runtime.</p></div><Lock size={17} /></Link>
           </div>
         </div>
