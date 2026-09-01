@@ -14,7 +14,6 @@ import {
   ExternalLink,
   Film,
   Gamepad2,
-  Layers3,
   LoaderCircle,
   Lock,
   Rotate3D,
@@ -23,6 +22,7 @@ import {
   UserRound,
 } from "lucide-react";
 import { PageShell } from "@/components/shared/page-shell";
+import { SourceMediaCarousel } from "@/components/templates/source-media-carousel";
 
 const ModelViewer = dynamic(() => import("@/components/3d/model-viewer"), {
   ssr: false,
@@ -112,6 +112,11 @@ export function TemplatesPage({ initialPrompt }: { initialPrompt: string }) {
     }
   }
 
+  function useMediaPrompt(nextPrompt: string) {
+    setPrompt(nextPrompt);
+    document.getElementById("template-prompt")?.focus();
+  }
+
   const working = task?.status === "PENDING" || task?.status === "IN_PROGRESS";
 
   return (
@@ -144,15 +149,7 @@ export function TemplatesPage({ initialPrompt }: { initialPrompt: string }) {
                 {task?.modelUrl ? <a href={task.modelUrl} target="_blank" rel="noreferrer"><Download size={13} /> Download GLB</a> : <span className="disabled"><Download size={13} /> Download GLB</span>}
               </div>
               <ModelViewer modelUrl={task?.modelUrl} />
-              <div className="bb-generator-assets">
-                <div><b>Sources + template assets</b><span>Use free references or generate an original GLB</span></div>
-                <div className="bb-generator-asset-row">
-                  <a href="https://polyhaven.com/models" target="_blank" rel="noreferrer"><Cuboid size={21} /><span>CC0 models</span></a>
-                  <a href="https://kenney.nl/assets" target="_blank" rel="noreferrer"><Layers3 size={21} /><span>Game kits</span></a>
-                  <a href="https://www.pexels.com/videos/" target="_blank" rel="noreferrer"><Film size={21} /><span>Source video</span></a>
-                  <div><Sparkles size={21} /><span>Your generated GLB</span></div>
-                </div>
-              </div>
+              <SourceMediaCarousel onUsePrompt={useMediaPrompt} />
             </div>
 
             <aside className="bb-generator-prompt">
