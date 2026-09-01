@@ -5,9 +5,9 @@ import { useRouter } from "next/navigation";
 import { ArrowUp, Sparkles } from "lucide-react";
 
 const ideas = [
-  "A moonlit forest where I collect crystals and avoid three guards",
-  "A neon obstacle course with fast movement and a short timer",
-  "A cozy island treasure hunt with golden pickups",
+  "A modular ancient forest portal with mossy stone and low-poly edges",
+  "A stylized sci-fi supply crate with removable panels",
+  "A fantasy watchtower kit with game-ready topology",
 ];
 
 export function HeroPrompt() {
@@ -18,7 +18,7 @@ export function HeroPrompt() {
     event.preventDefault();
     const idea = prompt.trim();
     if (idea.length < 3) return;
-    router.push(`/editor?template=explorer&new=1&prompt=${encodeURIComponent(idea)}`);
+    router.push(`/templates?prompt=${encodeURIComponent(idea)}`);
   }
 
   return (
@@ -36,7 +36,7 @@ export function HeroPrompt() {
           placeholder="Describe the world you want to build..."
         />
         <div className="bb-prompt-footer">
-          <span><Sparkles size={15} /> AI-assisted setup</span>
+          <span><Sparkles size={15} /> Text to 3D template</span>
           <button type="submit" aria-label="Open this idea in the builder" disabled={prompt.trim().length < 3}>
             <ArrowUp size={18} />
           </button>

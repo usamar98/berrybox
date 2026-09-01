@@ -3,18 +3,15 @@ import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 
 const productLinks = [
-  { href: "/templates", label: "Templates" },
-  { href: "/editor?template=explorer&new=1", label: "AI Builder" },
+  { href: "/templates", label: "3D Template Generator" },
   { href: "/characters", label: "Character Creator" },
-  { href: "/workflow", label: "Connected Workflow" },
+  { href: "/workflow", label: "3D Game Generator" },
 ];
 
 const exploreLinks = [
   { href: "/#features", label: "Features" },
   { href: "/#workspace", label: "Workspace" },
-  { href: "/#showcase", label: "Showcase" },
-  { href: "/#access", label: "Access" },
-  { href: "/#roadmap", label: "Roadmap" },
+  { href: "/#sources", label: "Free Sources" },
 ];
 
 export function SiteFooter() {
@@ -31,7 +28,7 @@ export function SiteFooter() {
         </div>
         <div className="bb-footer-links"><p>PRODUCT</p>{productLinks.map((link) => <Link key={link.href} href={link.href}>{link.label}</Link>)}</div>
         <div className="bb-footer-links"><p>EXPLORE</p>{exploreLinks.map((link) => <Link key={link.href} href={link.href}>{link.label}</Link>)}</div>
-        <div className="bb-footer-links"><p>CREATE</p><Link href="/editor?template=explorer&new=1">Open builder <ArrowUpRight size={13} /></Link><Link href="/templates">Choose a template <ArrowUpRight size={13} /></Link></div>
+        <div className="bb-footer-links"><p>CREATE</p><Link href="/templates">Generate a 3D template <ArrowUpRight size={13} /></Link><Link href="/characters">Character creator <ArrowUpRight size={13} /></Link></div>
       </div>
       <div className="bb-footer-bottom">
         <span>© {new Date().getFullYear()} BERRYBOX</span>

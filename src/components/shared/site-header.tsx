@@ -9,9 +9,8 @@ import { ArrowRight, Menu, X } from "lucide-react";
 const navItems = [
   { href: "/#features", label: "Features" },
   { href: "/#workspace", label: "Workspace" },
-  { href: "/templates", label: "Templates" },
-  { href: "/#access", label: "Access" },
-  { href: "/#roadmap", label: "Roadmap" },
+  { href: "/templates", label: "3D Generator" },
+  { href: "/#sources", label: "Free Sources" },
 ];
 
 export function SiteHeader() {
@@ -41,8 +40,8 @@ export function SiteHeader() {
         </nav>
 
         <div className="bb-header-action">
-          <Link href="/editor?template=explorer&new=1" className="bb-header-cta">
-            Start building <ArrowRight size={14} />
+          <Link href="/templates" className="bb-header-cta">
+            Generate 3D <ArrowRight size={14} />
           </Link>
         </div>
 
@@ -65,8 +64,8 @@ export function SiteHeader() {
                 {item.label}
               </Link>
             ))}
-            <Link href="/editor?template=explorer&new=1" onClick={() => setOpen(false)} className="bb-header-cta">
-              Start building <ArrowRight size={14} />
+            <Link href="/templates" onClick={() => setOpen(false)} className="bb-header-cta">
+              Generate 3D <ArrowRight size={14} />
             </Link>
           </div>
         </div>

@@ -18,16 +18,16 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://berrybox.local"),
   title: {
-    default: "BerryBox - AI Game Maker",
+    default: "BerryBox - AI 3D Template Generator",
     template: "%s | BerryBox",
   },
   description:
-    "Create playable 3D games with templates and an AI-assisted builder. Your next game starts at BerryBox.",
+    "Create game-ready 3D template assets from prompts and inspect GLB results in an interactive Three.js viewer.",
   keywords: [
-    "AI game maker",
-    "game templates",
-    "AI game editor",
-    "playable game generator",
+    "AI 3D generator",
+    "3D game templates",
+    "text to 3D",
+    "GLB viewer",
     "BerryBox",
   ],
   icons: {
@@ -38,7 +38,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "BerryBox",
     description:
-      "Describe a game idea, generate a playable configuration, and tune it with the AI editor.",
+      "Describe a 3D template, generate a GLB asset, and inspect it in an interactive web viewer.",
     type: "website",
     images: ["/berrybox.png"],
   },

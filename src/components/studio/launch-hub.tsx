@@ -41,10 +41,10 @@ const assets = [
   { name: "Tree", image: "/game-cards/forest-courier.svg" },
   { name: "Pines", image: "/game-cards/3d-world-explorer.png" },
   { name: "Boulders", image: "/game-cards/skyforge-isles.svg" },
-  { name: "Barrel", image: "/game-cards/2d-rpg-adventure.png" },
+  { name: "Portal", image: "/game-cards/skyforge-isles.svg" },
   { name: "Campfire", image: "/game-cards/ai-npc-story-game.png" },
-  { name: "Crate", image: "/game-cards/puzzle-game.png" },
-  { name: "Tent", image: "/game-cards/platformer-game.png" },
+  { name: "Crate", image: "/game-cards/3d-world-explorer.png" },
+  { name: "Character", image: "/game-cards/ai-npc-story-game.png" },
   { name: "Workbench", image: "/game-cards/neon-orchard.png" },
 ];
 

@@ -2,9 +2,9 @@
 import { BerryBoxHome } from "@/components/marketing/berrybox-home";
 
 export const metadata: Metadata = {
-  title: "BerryBox - Build the world. Play the idea.",
+  title: "BerryBox - AI 3D Template Generator",
   description:
-    "Create playable 3D games with templates, AI-assisted setup, hands-on controls, and an instant browser playtest.",
+    "Generate a game-ready 3D template from a prompt and inspect the GLB in an interactive browser viewer.",
 };
 
 export default function Home() {
