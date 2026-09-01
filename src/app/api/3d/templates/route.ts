@@ -1,10 +1,20 @@
 import { z } from "zod";
-import { createTemplateTask, MeshyProviderError, templateGenerationAvailable } from "@/lib/3d/meshy";
+import {
+  configuredTemplateModels,
+  createTemplateTask,
+  FalProviderError,
+  modelLabel,
+  resolveTemplateModel,
+  templateGenerationAvailable,
+} from "@/lib/3d/fal";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
-const InputSchema = z.object({ prompt: z.string().trim().min(8).max(600) });
+const InputSchema = z.object({
+  prompt: z.string().trim().min(8).max(600),
+  model: z.string().trim().max(180).optional(),
+});
 const MAX_BODY_BYTES = 4096;
 let hourStart = Date.now();
 let calls = 0;
@@ -33,13 +43,16 @@ async function readLimitedJson(request: Request) {
 }
 
 export function GET() {
+  const models = configuredTemplateModels();
   return Response.json({
     available: templateGenerationAvailable(),
-    provider: "Meshy",
+    provider: "fal.ai",
     output: "GLB",
+    defaultModel: models[0],
+    models: models.map((id) => ({ id, label: modelLabel(id) })),
     message: templateGenerationAvailable()
-      ? "AI 3D template generation is ready. Provider credits and limits still apply."
-      : "Add MESHY_API_KEY and set BERRYBOX_ENABLE_3D_TEMPLATE_GENERATION=true in Vercel.",
+      ? `${models.length} fal text-to-3D model${models.length === 1 ? " is" : "s are"} ready. Credits and model limits still apply.`
+      : "Add FAL_KEY and set BERRYBOX_ENABLE_3D_TEMPLATE_GENERATION=true in Vercel.",
   }, { headers: { "Cache-Control": "no-store" } });
 }
 
@@ -58,7 +71,9 @@ export async function POST(request: Request) {
   }
   const input = InputSchema.safeParse(body);
   if (!input.success) return Response.json({ error: "Describe one 3D template in 8 to 600 characters." }, { status: 400 });
-  if (!templateGenerationAvailable()) return Response.json({ error: "3D generation is not configured. Add the Meshy variables in Vercel and redeploy." }, { status: 503 });
+  if (!templateGenerationAvailable()) return Response.json({ error: "3D generation is not configured. Add FAL_KEY, enable the feature, and redeploy." }, { status: 503 });
+  const model = resolveTemplateModel(input.data.model);
+  if (!model) return Response.json({ error: "The selected fal model is not enabled for this deployment." }, { status: 400 });
 
   if (Date.now() - hourStart >= 3_600_000) { hourStart = Date.now(); calls = 0; }
   if (calls >= 6 || inFlight >= 1) return Response.json({ error: "The 3D generator is busy or has reached its temporary safety limit. Try again later." }, { status: 429, headers: { "Retry-After": "60" } });
@@ -66,10 +81,10 @@ export async function POST(request: Request) {
   calls += 1;
   inFlight += 1;
   try {
-    const taskId = await createTemplateTask(input.data.prompt, request.signal);
-    return Response.json({ taskId, status: "PENDING", provider: "Meshy" }, { status: 202, headers: { "Cache-Control": "no-store" } });
+    const taskId = await createTemplateTask(input.data.prompt, model, request.signal);
+    return Response.json({ taskId, model, status: "PENDING", provider: "fal.ai" }, { status: 202, headers: { "Cache-Control": "no-store" } });
   } catch (error) {
-    if (error instanceof MeshyProviderError) return Response.json({ error: error.message }, { status: error.status >= 400 && error.status < 600 ? error.status : 502 });
+    if (error instanceof FalProviderError) return Response.json({ error: error.message }, { status: error.status >= 400 && error.status < 600 ? error.status : 502 });
     console.error("3D template generation failed", { name: error instanceof Error ? error.name : "UnknownError" });
     return Response.json({ error: "The 3D provider could not start this task." }, { status: 502 });
   } finally {

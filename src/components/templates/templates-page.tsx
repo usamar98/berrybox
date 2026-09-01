@@ -29,9 +29,17 @@ const ModelViewer = dynamic(() => import("@/components/3d/model-viewer"), {
   loading: () => <div className="bb-viewer-loading"><LoaderCircle className="animate-spin" size={22} /> Loading Three.js viewer…</div>,
 });
 
-type ProviderState = { available: boolean; provider: string; output: string; message: string };
+type ProviderState = {
+  available: boolean;
+  provider: string;
+  output: string;
+  message: string;
+  defaultModel: string;
+  models: Array<{ id: string; label: string }>;
+};
 type TaskState = {
   taskId: string;
+  model: string;
   status: "PENDING" | "IN_PROGRESS" | "SUCCEEDED" | "FAILED" | "CANCELED";
   progress: number;
   modelUrl?: string;
@@ -49,28 +57,33 @@ export function TemplatesPage({ initialPrompt }: { initialPrompt: string }) {
   const [task, setTask] = useState<TaskState | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [selectedModel, setSelectedModel] = useState("");
   const activeTaskId = task?.taskId;
   const activeTaskStatus = task?.status;
+  const activeTaskModel = task?.model;
 
   useEffect(() => {
     let cancelled = false;
     fetch("/api/3d/templates", { cache: "no-store" })
       .then(async (response) => {
         const data = await response.json() as ProviderState;
-        if (!cancelled) setProvider(data);
+        if (!cancelled) {
+          setProvider(data);
+          setSelectedModel((current) => current || data.defaultModel);
+        }
       })
-      .catch(() => { if (!cancelled) setProvider({ available: false, provider: "Meshy", output: "GLB", message: "Provider status is unavailable." }); });
+      .catch(() => { if (!cancelled) setProvider({ available: false, provider: "fal.ai", output: "GLB", message: "Provider status is unavailable.", defaultModel: "", models: [] }); });
     return () => { cancelled = true; };
   }, []);
 
   useEffect(() => {
-    if (!activeTaskId || activeTaskStatus === "SUCCEEDED" || activeTaskStatus === "FAILED" || activeTaskStatus === "CANCELED") return;
+    if (!activeTaskId || !activeTaskModel || activeTaskStatus === "SUCCEEDED" || activeTaskStatus === "FAILED" || activeTaskStatus === "CANCELED") return;
     let cancelled = false;
     let timer: ReturnType<typeof setTimeout> | undefined;
 
     const poll = async () => {
       try {
-        const response = await fetch(`/api/3d/templates/${encodeURIComponent(activeTaskId)}`, { cache: "no-store" });
+        const response = await fetch(`/api/3d/templates/${encodeURIComponent(activeTaskId)}?model=${encodeURIComponent(activeTaskModel)}`, { cache: "no-store" });
         const data = await response.json() as TaskState & { error?: string };
         if (!response.ok) throw new Error(data.error || "Could not read the 3D task.");
         if (cancelled) return;
@@ -87,12 +100,12 @@ export function TemplatesPage({ initialPrompt }: { initialPrompt: string }) {
 
     timer = setTimeout(poll, 2_000);
     return () => { cancelled = true; if (timer) clearTimeout(timer); };
-  }, [activeTaskId, activeTaskStatus]);
+  }, [activeTaskId, activeTaskModel, activeTaskStatus]);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const idea = prompt.trim();
-    if (idea.length < 8 || submitting) return;
+    if (idea.length < 8 || !selectedModel || submitting) return;
     setSubmitting(true);
     setError("");
     setTask(null);
@@ -100,11 +113,11 @@ export function TemplatesPage({ initialPrompt }: { initialPrompt: string }) {
       const response = await fetch("/api/3d/templates", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: idea }),
+        body: JSON.stringify({ prompt: idea, model: selectedModel }),
       });
-      const data = await response.json() as { taskId?: string; status?: TaskState["status"]; error?: string };
+      const data = await response.json() as { taskId?: string; model?: string; status?: TaskState["status"]; error?: string };
       if (!response.ok || !data.taskId) throw new Error(data.error || "The 3D task could not be started.");
-      setTask({ taskId: data.taskId, status: data.status || "PENDING", progress: 0 });
+      setTask({ taskId: data.taskId, model: data.model || selectedModel, status: data.status || "PENDING", progress: 0 });
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : "The 3D task could not be started.");
     } finally {
@@ -126,7 +139,7 @@ export function TemplatesPage({ initialPrompt }: { initialPrompt: string }) {
           <div className="bb-generator-heading">
             <Link href="/" className="bb-coming-back"><ArrowLeft size={15} /> Back to BerryBox</Link>
             <div>
-              <p className="bb-kicker">AVAILABLE NOW · MESHY POWERED</p>
+              <p className="bb-kicker">AVAILABLE NOW · FAL MODEL GATEWAY</p>
               <h1>AI 3D Template Generator</h1>
               <p>Describe one game-ready asset, generate a GLB, and inspect it in the built-in Three.js viewport.</p>
             </div>
@@ -153,26 +166,30 @@ export function TemplatesPage({ initialPrompt }: { initialPrompt: string }) {
             </div>
 
             <aside className="bb-generator-prompt">
-              <div className="bb-prompt-title"><Sparkles size={17} /><span><b>3D template agent</b><small>MESHY API</small></span></div>
+              <div className="bb-prompt-title"><Sparkles size={17} /><span><b>3D template agent</b><small>FAL API</small></span></div>
               <form onSubmit={submit}>
+                <label htmlFor="template-model">Generation model</label>
+                <select id="template-model" value={selectedModel} onChange={(event) => setSelectedModel(event.target.value)} disabled={!provider?.models.length || working || submitting}>
+                  {provider?.models.length ? provider.models.map((model) => <option value={model.id} key={model.id}>{model.label}</option>) : <option value="">No fal model configured</option>}
+                </select>
                 <label htmlFor="template-prompt">Describe one 3D template</label>
                 <textarea id="template-prompt" value={prompt} onChange={(event) => setPrompt(event.target.value)} minLength={8} maxLength={600} rows={8} placeholder="A modular fantasy gate with clean low-poly geometry…" />
                 <div className="bb-prompt-tips"><span><Check size={12} /> Name one main object</span><span><Check size={12} /> Describe style and material</span><span><Check size={12} /> Mention game-ready proportions</span></div>
-                <button type="submit" disabled={prompt.trim().length < 8 || submitting || working || provider?.available === false}>{submitting || working ? <LoaderCircle className="animate-spin" size={15} /> : <Send size={15} />}{submitting ? "Starting task…" : working ? `Generating ${task?.progress || 0}%` : "Generate 3D template"}</button>
+                <button type="submit" disabled={prompt.trim().length < 8 || !selectedModel || submitting || working || provider?.available === false}>{submitting || working ? <LoaderCircle className="animate-spin" size={15} /> : <Send size={15} />}{submitting ? "Starting task…" : working ? `Generating ${task?.progress || 0}%` : "Generate 3D template"}</button>
               </form>
 
               <div className="bb-generation-status" aria-live="polite">
                 {error ? <><AlertCircle size={16} /><p><b>Generation needs attention</b><span>{error}</span></p></>
                   : task?.status === "SUCCEEDED" ? <><CircleCheck size={16} /><p><b>GLB ready in the viewer</b><span>Orbit the model, then download it before the signed URL expires.</span></p></>
-                  : working ? <><LoaderCircle className="animate-spin" size={16} /><p><b>Meshy is building the asset</b><span>Task {task.taskId.slice(0, 12)}… · {task.progress || 0}%</span></p></>
-                  : <><Cuboid size={16} /><p><b>{provider?.provider || "Meshy"} · {provider?.output || "GLB"}</b><span>{provider?.message || "Checking provider configuration…"}</span></p></>}
+                  : working ? <><LoaderCircle className="animate-spin" size={16} /><p><b>fal is building the asset</b><span>Task {task.taskId.slice(0, 12)}… · {task.progress || 0}%</span></p></>
+                  : <><Cuboid size={16} /><p><b>{provider?.provider || "fal.ai"} · {provider?.output || "GLB"}</b><span>{provider?.message || "Checking provider configuration…"}</span></p></>}
               </div>
               <p className="bb-credit-note">Generation consumes provider credits and can take several minutes. The server key is never sent to the browser.</p>
             </aside>
           </div>
 
           <div className="bb-locked-products">
-            <Link href="/characters"><UserRound size={21} /><div><span>COMING SOON</span><h2>Create a 3D character using a prompt</h2><p>Tripo generation, rigging, and animation pipeline.</p></div><Lock size={17} /></Link>
+            <Link href="/characters"><UserRound size={21} /><div><span>COMING SOON</span><h2>Create a 3D character using a prompt</h2><p>Configurable fal generation, rigging, and animation pipeline.</p></div><Lock size={17} /></Link>
             <Link href="/workflow"><Gamepad2 size={21} /><div><span>COMING SOON</span><h2>Create a 3D game using a prompt</h2><p>OpenAI game specification plus a playable Three.js runtime.</p></div><Lock size={17} /></Link>
           </div>
         </div>

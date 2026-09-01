@@ -58,11 +58,11 @@ const sources = [
 ];
 
 const faqs = [
-  ["What can I generate right now?", "The enabled feature creates individual 3D template assets from a text prompt through Meshy. Character generation and complete prompt-to-game generation remain locked as coming soon."],
+  ["What can I generate right now?", "The enabled feature creates individual 3D template assets through a server-configured fal text-to-3D model. Character generation and complete prompt-to-game generation remain locked as coming soon."],
   ["Which format does the generator return?", "The current pipeline requests a GLB file, a compact glTF format suited to browsers and compatible with common 3D tools and game engines."],
-  ["How do I see a generated model?", "BerryBox includes an interactive Three.js viewer. When Meshy finishes the task, the GLB opens in the viewport automatically and can be orbited, zoomed, panned, or downloaded."],
-  ["Where is the generated model stored?", "Meshy returns a hosted, signed asset URL. BerryBox does not permanently store the model in this release, so download completed assets you want to keep."],
-  ["Which external APIs are prepared?", "Meshy powers the enabled template generator. Tripo is selected for the future game-ready character pipeline, and OpenAI Structured Outputs is selected for the future game specification pipeline."],
+  ["How do I see a generated model?", "BerryBox includes an interactive Three.js viewer. When the selected fal model finishes, the GLB opens in the viewport automatically and can be orbited, zoomed, panned, or downloaded."],
+  ["Where is the generated model stored?", "fal returns a hosted asset URL from the selected model endpoint. BerryBox does not permanently store the model in this release, so download completed assets you want to keep."],
+  ["Which external APIs are prepared?", "A single fal gateway powers configurable 3D model endpoints. Add compatible text-to-3D model IDs in Vercel without adding another browser-side provider integration."],
   ["Are the source-library assets free?", "The linked Poly Haven and Kenney assets are CC0. Pexels videos use the Pexels license. Always review the current source license before shipping a commercial project."],
 ];
 
@@ -187,9 +187,9 @@ export function BerryBoxHome() {
           <div className="bb-shell">
             <SectionHeading eyebrow="PROVIDER FOUNDATION" title="The right API for each 3D job." copy="Keys stay server-side and can be added in Vercel. The interface exposes only readiness—not credentials." />
             <div className="bb-foundation-grid">
-              <article><span>LIVE</span><Cuboid size={27} /><h3>Meshy API</h3><p>Enabled for prompt-to-3D template generation and GLB output.</p></article>
-              <article><span>SOON</span><UserRound size={27} /><h3>Tripo API</h3><p>Selected for the future game-ready character, rigging, and animation pipeline.</p></article>
-              <article><span>SOON</span><Code2 size={27} /><h3>OpenAI Responses</h3><p>Selected for future validated game specifications and system planning.</p></article>
+              <article><span>LIVE</span><Cuboid size={27} /><h3>fal.ai gateway</h3><p>One server-side key for queued 3D generation and normalized GLB output.</p></article>
+              <article><span>CONFIGURABLE</span><UserRound size={27} /><h3>3D model catalog</h3><p>Add compatible fal text-to-3D endpoints through Vercel and expose them in the model selector.</p></article>
+              <article><span>SOON</span><Code2 size={27} /><h3>Expanded pipelines</h3><p>Future fal endpoints can power character, rigging, animation, image, and world-generation steps.</p></article>
             </div>
           </div>
         </section>

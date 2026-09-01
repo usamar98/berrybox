@@ -19,7 +19,7 @@ export function ComingSoon({ kind }: { kind: "character" | "workflow" }) {
               <span className="bb-coming-status"><Clock3 size={13} /> COMING SOON</span>
               <p className="bb-kicker">{character ? "3D CHARACTER FROM A PROMPT" : "3D GAME FROM A PROMPT"}</p>
               <h1>{character ? <>Create the hero.<br /><em>Then build the world.</em></> : <>Describe the game.<br /><em>Then make it playable.</em></>}</h1>
-              <p className="bb-coming-lead">{character ? "A dedicated character workspace is planned around Tripo generation, game-ready rigging, and animation export." : "A future OpenAI-powered workflow will turn a prompt into a validated game specification, systems, scenes, and a playable Three.js project."}</p>
+              <p className="bb-coming-lead">{character ? "A dedicated character workspace is planned around configurable fal generation, game-ready rigging, and animation endpoints." : "A future OpenAI-powered workflow will turn a prompt into a validated game specification, with fal models available for generated media and 3D assets."}</p>
               <ul>{items.map((item) => <li key={item}><Check size={15} />{item}</li>)}</ul>
               <div className="bb-coming-note"><Sparkles size={16} /><p><b>Not available in this release.</b><span>Templates and the AI-assisted builder are ready to explore today.</span></p></div>
               <Link href="/templates" className="bb-button bb-button-primary">Generate a 3D template now <ArrowRight size={16} /></Link>
