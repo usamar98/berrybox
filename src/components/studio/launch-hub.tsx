@@ -1,123 +1,176 @@
 import Image from "next/image";
 import Link from "next/link";
 import {
-  ArrowRight,
-  ArrowUpRight,
   Bot,
   Box,
-  Braces,
+  Boxes,
+  ChevronDown,
+  ChevronRight,
+  CirclePlay,
+  Code2,
+  Component,
+  Crosshair,
+  Cuboid,
+  Expand,
   Gamepad2,
-  HardDrive,
   Layers3,
+  Lightbulb,
+  Maximize2,
+  MessageSquareText,
+  Move3D,
+  Package,
+  PanelLeftClose,
+  Play,
+  Plus,
+  Redo2,
+  Rotate3D,
+  Save,
+  Search,
+  Settings2,
   Sparkles,
-  Workflow,
+  Undo2,
+  UserRound,
+  Users,
+  Volume2,
+  WandSparkles,
 } from "lucide-react";
-import { PageShell } from "@/components/shared/page-shell";
-import { SceneArt } from "./scene-art";
 
-const launches = [
-  { number: "01", title: "Templates + AI Builder", stage: "alpha", href: "/templates", available: true, icon: Layers3, art: "explorer" as const, text: "Start with a playable world. Shape it with your ideas. Build something that's yours.", action: "Start building" },
-  { number: "02", title: "3D Character Creator", stage: "beta", href: "/characters", available: false, icon: Box, art: "character" as const, text: "Bring your next hero to life. A dedicated space for creating game-ready characters.", action: "Explore what's next" },
-  { number: "03", title: "Connect the full workflow", stage: "", href: "/workflow", available: false, icon: Workflow, art: "workflow" as const, text: "Your characters, worlds, and ideas. One connected journey from first spark to release.", action: "Explore the workflow" },
+const studioTabs = ["World", "Gameplay", "NPCs", "Assets", "UI", "Test"];
+const systems = ["Health System", "Inventory System", "Quest System", "Combat System", "AI Behavior"];
+const assets = [
+  { name: "Tree", image: "/game-cards/forest-courier.svg" },
+  { name: "Pines", image: "/game-cards/3d-world-explorer.png" },
+  { name: "Boulders", image: "/game-cards/skyforge-isles.svg" },
+  { name: "Barrel", image: "/game-cards/2d-rpg-adventure.png" },
+  { name: "Campfire", image: "/game-cards/ai-npc-story-game.png" },
+  { name: "Crate", image: "/game-cards/puzzle-game.png" },
+  { name: "Tent", image: "/game-cards/platformer-game.png" },
+  { name: "Workbench", image: "/game-cards/neon-orchard.png" },
 ];
 
 export function LaunchHub() {
   return (
-    <PageShell>
-      <section className="workspace-hero">
-        <div className="workspace-grid" aria-hidden="true" />
-        <div className="workspace-glow workspace-glow-one" aria-hidden="true" />
-        <div className="workspace-glow workspace-glow-two" aria-hidden="true" />
-        <div className="studio-container relative z-10 py-14 sm:py-20 lg:py-24">
-          <div className="workspace-hero-layout">
-            <div className="workspace-copy">
-              <p className="studio-eyebrow"><Sparkles size={14} /> THE CREATOR&apos;S PLAYGROUND</p>
-              <h1>Turn your ideas into <span>playable games.</span></h1>
-              <p className="workspace-lead">Describe the world you imagine. Start from a polished template, customize the gameplay, and step inside a real 3D prototype.</p>
-              <div className="workspace-actions">
-                <Link href="/editor" className="workspace-primary">Start creating <ArrowRight size={17} /></Link>
-                <Link href="/templates" className="workspace-secondary">Explore templates</Link>
-              </div>
-              <div className="workspace-engine">
-                <p><span className="status-dot" /> AI-assisted game creation</p>
-                <div>
-                  <span><Bot size={14} /> OpenAI</span>
-                  <span><Braces size={14} /> No code</span>
-                  <span><HardDrive size={14} /> Browser-local</span>
-                </div>
-              </div>
-            </div>
-
-            <CreatorVisual />
-          </div>
-
-          <div className="workspace-capabilities">
-            <div><Sparkles /><span><strong>AI-assisted</strong> creation</span></div>
-            <div><Braces /><span><strong>No code</strong> required</span></div>
-            <div><Gamepad2 /><span><strong>Playable 3D</strong> previews</span></div>
-            <div><HardDrive /><span><strong>Save</strong> your projects</span></div>
-          </div>
-        </div>
-      </section>
-
-      <section className="studio-container py-16 sm:py-20">
-        <div className="workspace-path-heading">
+    <main className="creator-studio">
+      <header className="creator-topbar">
+        <div className="creator-project">
+          <Link href="/templates" aria-label="Back to templates" className="creator-mark">
+            <Image src="/berrybox.png" alt="" width={28} height={28} priority />
+          </Link>
           <div>
-            <p className="studio-eyebrow"><Layers3 size={14} /> CHOOSE YOUR CREATION PATH</p>
-            <h2>One workspace. Three possibilities.</h2>
+            <strong>Mystic Forest</strong>
+            <span><i /> Auto-saved</span>
           </div>
-          <p>Start with what works today, then watch your full game-making workflow grow.</p>
         </div>
-        <div className="grid gap-5 lg:grid-cols-3">
-          {launches.map((launch) => (
-            <Link key={launch.href} href={launch.href} className="launch-card group">
-              <div className="flex items-center justify-between px-6 pt-6">
-                <span className="font-mono text-xs text-slate-500">/ {launch.number}</span>
-                <span className={launch.available ? "studio-pill pill-live" : "studio-pill"}>{launch.available ? "Available now" : "Coming soon"}</span>
-              </div>
-              <SceneArt variant={launch.art} />
-              <div className="flex flex-1 flex-col px-6 pb-6">
-                <launch.icon className="mb-4 h-5 w-5 text-rose-300" />
-                <h2 className="text-xl font-semibold tracking-tight">{launch.title}{launch.stage ? <span className="ml-2 text-sm font-normal text-slate-500"> {launch.stage}</span> : null}</h2>
-                <p className="mt-3 text-sm leading-6 text-slate-400">{launch.text}</p>
-                <div className="mt-7 flex items-center justify-between border-t border-white/10 pt-5 text-sm font-medium">
-                  <span>{launch.action}</span><ArrowUpRight className="h-5 w-5 text-rose-300 transition group-hover:-translate-y-1 group-hover:translate-x-1" />
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-        <div className="mt-8 flex flex-wrap justify-between gap-3 text-xs text-slate-500"><span>Made for curious minds, first-time builders, and indie creators.</span><span>Build a little. Play a lot.</span></div>
-      </section>
-    </PageShell>
-  );
-}
 
-function CreatorVisual() {
-  return (
-    <div className="workspace-visual" aria-label="A collage of worlds you can create with BerryBox">
-      <div className="workspace-orbit orbit-one" aria-hidden="true" />
-      <div className="workspace-orbit orbit-two" aria-hidden="true" />
-      <div className="workspace-preview preview-one">
-        <Image src="/game-cards/3d-world-explorer.png" alt="A floating fantasy world" fill sizes="(max-width: 768px) 38vw, 210px" />
-        <span>EXPLORE</span>
+        <nav aria-label="Creator studio tools" className="creator-tabs">
+          {studioTabs.map((tab) => (
+            <button key={tab} type="button" className={tab === "World" ? "is-active" : ""}>
+              {tab === "World" ? <Cuboid /> : tab === "Gameplay" ? <Gamepad2 /> : tab === "NPCs" ? <Users /> : tab === "Assets" ? <Package /> : tab === "UI" ? <Component /> : <Code2 />}
+              {tab}
+            </button>
+          ))}
+        </nav>
+
+        <div className="creator-actions">
+          <button type="button" aria-label="Undo"><Undo2 /></button>
+          <button type="button" aria-label="Redo"><Redo2 /></button>
+          <button type="button" aria-label="Save project"><Save /></button>
+          <button type="button" aria-label="Expand workspace"><Expand /></button>
+          <Link href="/play?template=explorer" className="creator-play"><Play /> Play</Link>
+          <Link href="/workflow" className="creator-publish">Publish</Link>
+        </div>
+      </header>
+
+      <div className="creator-layout">
+        <aside className="creator-rail" aria-label="Studio navigation">
+          <button type="button" className="is-active" aria-label="AI assistant"><Bot /></button>
+          <button type="button" aria-label="Scene"><Box /></button>
+          <button type="button" aria-label="Assets"><Package /></button>
+          <button type="button" aria-label="Characters"><UserRound /></button>
+          <button type="button" aria-label="Lighting"><Lightbulb /></button>
+          <button type="button" aria-label="Audio"><Volume2 /></button>
+          <button type="button" aria-label="Settings"><Settings2 /></button>
+        </aside>
+
+        <aside className="creator-assistant">
+          <div className="creator-assistant-head">
+            <div className="creator-avatar">
+              <Image src="/game-cards/ai-npc-story-game.png" alt="Berry AI assistant" fill sizes="44px" />
+            </div>
+            <div><strong>Berry AI</strong><span><i /> Ready to create</span></div>
+            <button type="button" aria-label="Collapse assistant"><PanelLeftClose /></button>
+          </div>
+          <div className="creator-conversation">
+            <div className="creator-message berry"><span>B</span><p>Hi! I&apos;m Berry. What would you like to create or improve today?</p></div>
+            <div className="creator-message user"><span>U</span><p>Add a bandit camp in the forest clearing.</p></div>
+            <div className="creator-message berry"><span>B</span><p>I&apos;ve added a bandit camp with tents, a campfire, and three enemy NPCs. What should they drop?</p></div>
+          </div>
+          <div className="creator-suggestions">
+            <button type="button"><Plus /> Add Quest</button>
+            <button type="button"><Plus /> Add NPC</button>
+            <button type="button">Change Environment</button>
+            <button type="button">Improve Gameplay</button>
+          </div>
+          <div className="creator-composer">
+            <textarea aria-label="Ask Berry AI" placeholder="Ask Berry AI…" rows={3} />
+            <button type="button" aria-label="Generate with AI"><WandSparkles /></button>
+          </div>
+        </aside>
+
+        <section className="creator-canvas-column" aria-label="World editor">
+          <div className="creator-viewport">
+            <Image src="/game-cards/3d-world-explorer.png" alt="Mystic Forest game world" fill priority sizes="(max-width: 900px) 100vw, 62vw" />
+            <div className="creator-viewport-shade" />
+            <div className="creator-view-tools">
+              <button type="button" aria-label="Select"><Crosshair /></button>
+              <button type="button" aria-label="Move"><Move3D /></button>
+              <button type="button" aria-label="Rotate"><Rotate3D /></button>
+            </div>
+            <div className="creator-view-meta"><span><i /> LIVE SCENE</span><strong>Forest Clearing</strong></div>
+            <div className="creator-enemy enemy-one"><span /></div>
+            <div className="creator-enemy enemy-two"><span /></div>
+            <div className="creator-enemy enemy-three"><span /></div>
+            <div className="creator-axis"><i className="axis-y">Y</i><i className="axis-x">X</i><i className="axis-z">Z</i></div>
+            <button type="button" className="creator-fullscreen" aria-label="Fullscreen"><Maximize2 /></button>
+            <div className="creator-world-status"><span><Sparkles /> AI-built scene</span><span>3 enemies</span><span>12 objects</span></div>
+          </div>
+
+          <div className="creator-assets">
+            <div className="creator-assets-head">
+              <div className="creator-asset-tabs"><button type="button" className="is-active">Assets</button><button type="button">Characters</button><button type="button">Environment</button><button type="button">Props</button><button type="button">Audio</button><button type="button">UI</button><button type="button">My Assets</button></div>
+              <label><Search /><input aria-label="Search assets" placeholder="Search assets…" /></label>
+            </div>
+            <div className="creator-asset-grid">
+              {assets.map((asset) => (
+                <button type="button" key={asset.name} className="creator-asset-card">
+                  <span><Image src={asset.image} alt="" fill sizes="92px" /></span>
+                  {asset.name}
+                </button>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <aside className="creator-inspector">
+          <div className="creator-inspector-tabs"><button type="button">Code</button><button type="button" className="is-active">Systems</button><button type="button">Properties</button></div>
+          <section className="creator-system-panel">
+            <div className="creator-panel-title"><span>Game Systems</span><button type="button"><Plus /></button></div>
+            {systems.map((system) => <div className="creator-system" key={system}><span>{system}</span><button type="button" aria-label={`${system} enabled`} className="creator-toggle"><i /></button></div>)}
+          </section>
+          <section className="creator-hierarchy">
+            <div className="creator-panel-title"><span>Scene Hierarchy</span><button type="button"><Plus /></button></div>
+            <div className="creator-tree"><p><ChevronDown /> World</p><p className="level-one"><ChevronDown /> Forest_Clearing</p><p className="level-two"><ChevronRight /> Bandit_Camp</p><p className="level-two"><ChevronRight /> Trees_01</p><p className="level-two"><ChevronRight /> Tent_02</p><p className="level-two"><ChevronRight /> Campfire</p><p className="level-two"><ChevronRight /> Bandit_01</p><p className="level-two"><ChevronRight /> Bandit_02</p><p className="level-two"><ChevronRight /> Bandit_03</p><p className="level-two"><ChevronRight /> Berry_Player</p></div>
+          </section>
+          <div className="creator-inspector-footer"><MessageSquareText /><span>Describe changes to Berry AI or select any object to edit its properties.</span></div>
+        </aside>
       </div>
-      <div className="workspace-preview preview-two">
-        <Image src="/game-cards/arcade-shooter.png" alt="A colorful space arcade game" fill sizes="(max-width: 768px) 32vw, 170px" />
-        <span>PLAY</span>
+
+      <div className="creator-mobile-bar">
+        <Link href="/templates"><Layers3 /> Templates</Link>
+        <Link href="/editor"><Sparkles /> AI Builder</Link>
+        <Link href="/play?template=explorer"><CirclePlay /> Play</Link>
+        <Link href="/workflow"><Boxes /> Publish</Link>
       </div>
-      <div className="workspace-preview preview-three">
-        <Image src="/game-cards/platformer-game.png" alt="A bright platform game world" fill sizes="(max-width: 768px) 34vw, 190px" />
-        <span>BUILD</span>
-      </div>
-      <div className="workspace-core">
-        <span className="workspace-core-ring" aria-hidden="true" />
-        <Image src="/berrybox.png" alt="BerryBox" width={250} height={250} priority />
-        <div><span className="status-dot" /> BUILDER ALPHA IS LIVE</div>
-      </div>
-      <span className="workspace-spark spark-one" aria-hidden="true">✦</span>
-      <span className="workspace-spark spark-two" aria-hidden="true">✦</span>
-      <span className="workspace-spark spark-three" aria-hidden="true">✦</span>
-    </div>
+    </main>
   );
 }
