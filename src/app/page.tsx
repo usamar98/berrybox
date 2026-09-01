@@ -1,13 +1,13 @@
 ﻿import type { Metadata } from "next";
-import { LaunchHub } from "@/components/studio/launch-hub";
+import { BerryBoxHome } from "@/components/marketing/berrybox-home";
 
 export const metadata: Metadata = {
-  title: "BerryBox - Your game creation workspace",
+  title: "BerryBox - Build the world. Play the idea.",
   description:
-    "Build a playable 3D game with templates and AI. Explore what's next for character creation and connected workflows.",
+    "Create playable 3D games with templates, AI-assisted setup, hands-on controls, and an instant browser playtest.",
 };
 
 export default function Home() {
-  return <LaunchHub />;
+  return <BerryBoxHome />;
 }
 

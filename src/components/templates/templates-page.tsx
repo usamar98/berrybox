@@ -30,7 +30,7 @@ export function TemplatesPage() {
     (template.title + " " + template.category + " " + template.features.join(" ")).toLowerCase().includes(search.toLowerCase()));
   return (
     <PageShell>
-      <section className="studio-container py-10 sm:py-14">
+      <section className="bb-template-page studio-container py-10 sm:py-14">
         <Link href="/" className="studio-back"><ArrowLeft size={15} /> Workspace</Link>
         <div className="mt-8 flex flex-wrap items-start justify-between gap-4">
           <div><p className="studio-eyebrow">YOUR FIRST WORLD STARTS HERE</p><h1 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">Templates + AI Builder <span className="text-slate-500">alpha</span></h1><p className="mt-4 max-w-2xl text-sm leading-6 text-slate-400">Pick a playable 3D starter, then shape it with AI or hands-on controls. Small worlds. Real gameplay. Yours to explore.</p></div>

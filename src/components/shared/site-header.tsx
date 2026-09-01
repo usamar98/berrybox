@@ -4,17 +4,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { Bot, Menu, X } from "lucide-react";
-import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { ArrowRight, Menu, X } from "lucide-react";
 
 const navItems = [
-  { href: "/", label: "Workspace" },
-  { href: "/templates", label: "Templates + AI Builder" },
-  { href: "/characters", label: "Characters" },
-  // { href: "/gallery", label: "Gallery" },
-  // { href: "/pricing", label: "Pricing" },
-  // { href: "/roadmap", label: "Roadmap" },
+  { href: "/#features", label: "Features" },
+  { href: "/#workspace", label: "Workspace" },
+  { href: "/templates", label: "Templates" },
+  { href: "/#access", label: "Access" },
+  { href: "/#roadmap", label: "Roadmap" },
 ];
 
 export function SiteHeader() {
@@ -22,51 +19,30 @@ export function SiteHeader() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-white/10 bg-[#070b12]/80 backdrop-blur-xl">
-      <div className="mx-auto flex h-[4.5rem] w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <Link href="/" className="flex items-center gap-3">
-          <span className="grid h-11 w-11 place-items-center overflow-hidden rounded-xl">
-            <Image
-              src="/berrybox.png"
-              alt="BerryBox logo"
-              width={44}
-              height={44}
-              priority
-              className="h-full w-full object-contain"
-            />
+    <header className="bb-site-header">
+      <div className="bb-header-inner">
+        <Link href="/" className="bb-logo" aria-label="BerryBox home">
+          <span className="bb-logo-icon">
+            <Image src="/berrybox.png" alt="BerryBox logo" width={34} height={34} priority />
           </span>
-          <span className="text-base font-black tracking-wide text-white">
-            BerryBox
-          </span>
+          <span>BerryBox</span>
         </Link>
 
-        <nav className="hidden items-center gap-1 md:flex">
-          {navItems.map((item) => {
-            const active = pathname === item.href;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "rounded-lg px-3 py-2 text-sm font-semibold transition",
-                  active
-                    ? "bg-white/[0.08] text-white"
-                    : "text-slate-300 hover:bg-white/[0.06] hover:text-white",
-                )}
-              >
-                {item.label}
-              </Link>
-            );
-          })}
+        <nav className="bb-desktop-nav" aria-label="Main navigation">
+          {navItems.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={item.href === "/templates" && pathname === "/templates" ? "active" : undefined}
+            >
+              {item.label}
+            </Link>
+          ))}
         </nav>
 
-        <div className="hidden items-center gap-3 md:flex">
-          <Link
-            href="/editor"
-            className="studio-primary !py-2.5"
-          >
-            <Bot className="h-4 w-4" />
-            Open builder
+        <div className="bb-header-action">
+          <Link href="/editor?template=explorer&new=1" className="bb-header-cta">
+            Start building <ArrowRight size={14} />
           </Link>
         </div>
 
@@ -75,32 +51,22 @@ export function SiteHeader() {
           aria-label="Toggle navigation"
           aria-expanded={open}
           onClick={() => setOpen((value) => !value)}
-          className="grid h-10 w-10 place-items-center rounded-lg border border-white/10 bg-white/[0.06] text-white md:hidden"
+          className="bb-menu-button"
         >
-          {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          {open ? <X size={19} /> : <Menu size={19} />}
         </button>
       </div>
 
       {open ? (
-        <div className="border-t border-white/10 px-4 pb-4 md:hidden">
-          <div className="mx-auto flex max-w-7xl flex-col gap-2 pt-3">
+        <div className="bb-mobile-nav">
+          <div>
             {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setOpen(false)}
-                className="rounded-lg px-3 py-3 text-sm font-semibold text-slate-200 hover:bg-white/[0.06]"
-              >
+              <Link key={item.href} href={item.href} onClick={() => setOpen(false)}>
                 {item.label}
               </Link>
             ))}
-            <Link
-              href="/editor"
-              onClick={() => setOpen(false)}
-              className={cn(buttonVariants({ variant: "primary" }), "mt-2")}
-            >
-              <Bot className="h-4 w-4" />
-              Open builder
+            <Link href="/editor?template=explorer&new=1" onClick={() => setOpen(false)} className="bb-header-cta">
+              Start building <ArrowRight size={14} />
             </Link>
           </div>
         </div>
@@ -108,4 +74,3 @@ export function SiteHeader() {
     </header>
   );
 }
-
