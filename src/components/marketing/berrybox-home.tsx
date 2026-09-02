@@ -50,6 +50,17 @@ const features = [
   },
 ];
 
+const heroImageColumns = [
+  [
+    "/creator-media/showcase-qubo-explorer.jpg",
+    "/creator-media/showcase-chronicles-empire.jpg",
+  ],
+  [
+    "/creator-media/showcase-shattered-dimension.jpg",
+    "/creator-media/showcase-geometrix.jpg",
+  ],
+];
+
 const motionStories = [
   {
     number: "01",
@@ -67,6 +78,16 @@ const motionStories = [
         title: "Chronicles of Empire",
         image: "/creator-media/showcase-chronicles-empire.jpg",
         alt: "Chronicles of Empire fantasy warfare cover artwork",
+      },
+      {
+        title: "Aether's Fall",
+        image: "/creator-media/template-generator.jpg",
+        alt: "Aether's Fall action RPG cover artwork",
+      },
+      {
+        title: "3D World Explorer",
+        image: "/game-cards/3d-world-explorer.png",
+        alt: "3D World Explorer floating island game artwork",
       },
     ],
   },
@@ -87,6 +108,16 @@ const motionStories = [
         image: "/creator-media/showcase-nightmares-embrace.jpg",
         alt: "Nightmare's Embrace survival horror cover artwork",
       },
+      {
+        title: "Skyfall Heroes",
+        image: "/creator-media/character-generator.jpg",
+        alt: "Skyfall Heroes warrior cover artwork",
+      },
+      {
+        title: "AI NPC Story Game",
+        image: "/game-cards/ai-npc-story-game.png",
+        alt: "AI NPC story game character artwork",
+      },
     ],
   },
   {
@@ -105,6 +136,16 @@ const motionStories = [
         title: "Geometrix",
         image: "/creator-media/showcase-geometrix.jpg",
         alt: "Geometrix colorful 3D puzzle adventure cover artwork",
+      },
+      {
+        title: "Love's Horizon",
+        image: "/creator-media/game-generator.jpg",
+        alt: "Love's Horizon story game cover artwork",
+      },
+      {
+        title: "Neon Orchard",
+        image: "/game-cards/neon-orchard.png",
+        alt: "Neon Orchard science-fiction game artwork",
       },
     ],
   },
@@ -125,6 +166,20 @@ export function BerryBoxHome() {
     <PageShell>
       <div className="bb-home">
         <section className="bb-hero">
+          <div className="bb-hero-media" aria-hidden="true">
+            <div className="bb-hero-media-column bb-hero-media-video">
+              <video src="/creator-media/world-motion-01.mp4" autoPlay muted loop playsInline preload="metadata" />
+            </div>
+            {heroImageColumns.map((images, columnIndex) => (
+              <div className="bb-hero-media-column bb-hero-media-stack" key={`hero-column-${columnIndex + 1}`}>
+                {images.map((image) => (
+                  <div className="bb-hero-media-cell" key={image}>
+                    <Image src={image} alt="" fill loading="eager" sizes="(max-width: 800px) 34vw, 33vw" />
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
           <div className="bb-orb bb-orb-one" />
           <div className="bb-orb bb-orb-two" />
           <div className="bb-shell bb-hero-inner">
@@ -159,10 +214,10 @@ export function BerryBoxHome() {
 
         <section className="bb-section bb-creator-showcase">
           <div className="bb-shell">
-            <SectionHeading eyebrow="WORLDS IN MOTION" title="See the idea become a living world." copy="Three cinematic studies paired with six game-cover concepts reveal different directions for characters, environments, and playable worlds." />
-            <div className="bb-motion-rows">
+            <SectionHeading eyebrow="WORLDS IN MOTION" title="See the idea become a living world." copy="Three cinematic studies lead into twelve game-cover concepts—four distinct visual directions in every column." />
+            <div className="bb-motion-columns">
               {motionStories.map((story) => (
-                <div className="bb-motion-row" key={story.video}>
+                <div className="bb-motion-column" key={story.video}>
                   <article className="bb-motion-card bb-motion-video">
                     <video src={story.video} autoPlay muted loop playsInline controls preload="metadata" aria-label={`${story.title} motion reference`} />
                     <div className="bb-motion-shade" />
