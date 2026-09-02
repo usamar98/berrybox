@@ -80,9 +80,9 @@ const motionStories = [
         alt: "Chronicles of Empire fantasy warfare cover artwork",
       },
       {
-        title: "Aether's Fall",
-        image: "/creator-media/template-generator.jpg",
-        alt: "Aether's Fall action RPG cover artwork",
+        title: "Byte Runner",
+        image: "/game-cards/byte-runner.png",
+        alt: "Byte Runner neon pixel platform game artwork",
       },
       {
         title: "3D World Explorer",
@@ -143,13 +143,31 @@ const motionStories = [
         alt: "Love's Horizon story game cover artwork",
       },
       {
-        title: "Neon Orchard",
-        image: "/game-cards/neon-orchard.png",
-        alt: "Neon Orchard science-fiction game artwork",
+        title: "Moonlit Casefile",
+        image: "/game-cards/moonlit-casefile.png",
+        alt: "Moonlit Casefile noir character investigation artwork",
       },
     ],
   },
-];
+] as const;
+
+const motionGridItems = [
+  { kind: "motion", story: motionStories[0] },
+  { kind: "concept", number: "01.2", concept: motionStories[0].concepts[1] },
+  { kind: "concept", number: "01.1", concept: motionStories[0].concepts[0] },
+  { kind: "motion", story: motionStories[2] },
+  { kind: "concept", number: "02.1", concept: motionStories[1].concepts[0] },
+  { kind: "concept", number: "03.1", concept: motionStories[2].concepts[0] },
+  { kind: "motion", story: motionStories[1] },
+  { kind: "concept", number: "02.2", concept: motionStories[1].concepts[1] },
+  { kind: "concept", number: "03.2", concept: motionStories[2].concepts[1] },
+  { kind: "concept", number: "01.3", concept: motionStories[0].concepts[2] },
+  { kind: "concept", number: "02.3", concept: motionStories[1].concepts[2] },
+  { kind: "concept", number: "03.3", concept: motionStories[2].concepts[2] },
+  { kind: "concept", number: "01.4", concept: motionStories[0].concepts[3] },
+  { kind: "concept", number: "02.4", concept: motionStories[1].concepts[3] },
+  { kind: "concept", number: "03.4", concept: motionStories[2].concepts[3] },
+] as const;
 
 function SectionHeading({ eyebrow, title, copy }: { eyebrow: string; title: string; copy?: string }) {
   return (
@@ -214,35 +232,42 @@ export function BerryBoxHome() {
 
         <section className="bb-section bb-creator-showcase">
           <div className="bb-shell">
-            <SectionHeading eyebrow="WORLDS IN MOTION" title="See the idea become a living world." copy="Three cinematic studies lead into twelve game-cover concepts—four distinct visual directions in every column." />
-            <div className="bb-motion-columns">
-              {motionStories.map((story) => (
-                <div className="bb-motion-column" key={story.video}>
-                  <article className="bb-motion-card bb-motion-video">
-                    <video src={story.video} autoPlay muted loop playsInline controls preload="metadata" aria-label={`${story.title} motion reference`} />
-                    <div className="bb-motion-shade" />
-                    <span className="bb-motion-number"><Film size={13} /> {story.number} / MOTION STUDY</span>
-                    <div className="bb-motion-copy">
-                      <h3>{story.title}</h3>
-                      <p>{story.copy}</p>
-                      <a href={story.href} target="_blank" rel="noreferrer">View original <ExternalLink size={13} /></a>
-                    </div>
-                  </article>
-                  {story.concepts.map((concept, index) => (
-                    <article className="bb-motion-card bb-motion-concept" key={concept.image}>
-                      <div className="bb-motion-concept-backdrop" aria-hidden="true">
-                        <Image src={concept.image} alt="" fill sizes="(max-width: 800px) 100vw, 33vw" />
-                      </div>
-                      <Image className="bb-motion-concept-art" src={concept.image} alt={concept.alt} fill sizes="(max-width: 800px) 100vw, 33vw" />
+            <SectionHeading eyebrow="WORLDS IN MOTION" title="See the idea become a living world." copy="Three cinematic studies move through twelve game-cover concepts and distinct visual directions." />
+            <div className="bb-motion-grid">
+              {motionGridItems.map((item) => {
+                if (item.kind === "motion") {
+                  const { story } = item;
+
+                  return (
+                    <article className="bb-motion-card bb-motion-video" key={`motion-${story.number}`}>
+                      <video src={story.video} autoPlay muted loop playsInline controls preload="metadata" aria-label={`${story.title} motion reference`} />
                       <div className="bb-motion-shade" />
-                      <span className="bb-motion-number"><Cuboid size={13} /> {story.number}.{index + 1} / COVER CONCEPT</span>
+                      <span className="bb-motion-number"><Film size={13} /> {story.number} / MOTION STUDY</span>
                       <div className="bb-motion-copy">
-                        <h3>{concept.title}</h3>
+                        <h3>{story.title}</h3>
+                        <p>{story.copy}</p>
+                        <a href={story.href} target="_blank" rel="noreferrer">View original <ExternalLink size={13} /></a>
                       </div>
                     </article>
-                  ))}
-                </div>
-              ))}
+                  );
+                }
+
+                const { concept } = item;
+
+                return (
+                  <article className="bb-motion-card bb-motion-concept" key={item.number}>
+                    <div className="bb-motion-concept-backdrop" aria-hidden="true">
+                      <Image src={concept.image} alt="" fill sizes="(max-width: 800px) 100vw, 33vw" />
+                    </div>
+                    <Image className="bb-motion-concept-art" src={concept.image} alt={concept.alt} fill sizes="(max-width: 800px) 100vw, 33vw" />
+                    <div className="bb-motion-shade" />
+                    <span className="bb-motion-number"><Cuboid size={13} /> {item.number} / COVER CONCEPT</span>
+                    <div className="bb-motion-copy">
+                      <h3>{concept.title}</h3>
+                    </div>
+                  </article>
+                );
+              })}
             </div>
           </div>
         </section>
