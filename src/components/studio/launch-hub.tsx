@@ -53,7 +53,7 @@ export function LaunchHub() {
     <main className="creator-studio">
       <header className="creator-topbar">
         <div className="creator-project">
-          <Link href="/templates" aria-label="Back to templates" className="creator-mark">
+          <Link href="/ai-3d-scene-generator" aria-label="Back to scene generator" className="creator-mark">
             <Image src="/berrybox.png" alt="" width={28} height={28} priority />
           </Link>
           <div>
@@ -166,7 +166,7 @@ export function LaunchHub() {
       </div>
 
       <div className="creator-mobile-bar">
-        <Link href="/templates"><Layers3 /> Templates</Link>
+        <Link href="/ai-3d-scene-generator"><Layers3 /> Scene Generator</Link>
         <Link href="/editor"><Sparkles /> AI Builder</Link>
         <Link href="/play?template=explorer"><CirclePlay /> Play</Link>
         <Link href="/workflow"><Boxes /> Publish</Link>

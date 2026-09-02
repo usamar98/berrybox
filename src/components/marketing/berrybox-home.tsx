@@ -24,14 +24,15 @@ const features = [
     active: true,
     image: "/game-cards/3d-world-explorer.png",
     imageAlt: "Floating fantasy world used as an AI 3D scene concept",
+    href: "/ai-3d-scene-generator",
   },
   {
     icon: UserRound,
     number: "02",
     title: "AI 3D Character Generator",
     copy: "Shape original textured heroes with silhouette, style, pose, and animation direction.",
-    status: "ACTIVE",
-    active: true,
+    status: "COMING SOON",
+    active: false,
     image: "/creator-media/character-generator.jpg",
     imageAlt: "Skyfall Heroes warrior cover artwork",
   },
@@ -223,13 +224,13 @@ export function BerryBoxHome() {
           <div className="bb-orb bb-orb-one" />
           <div className="bb-orb bb-orb-two" />
           <div className="bb-shell bb-hero-inner">
-            <p className="bb-kicker bb-hero-kicker"><span /> AI 3D TEMPLATE GENERATOR</p>
+            <p className="bb-kicker bb-hero-kicker"><span /> AI 3D SCENE GENERATOR</p>
             <h1>Create the asset.<br /><em>Build the world.</em></h1>
             <p className="bb-hero-copy">
-              Describe a game-ready 3D template, generate a GLB asset, and inspect it in an interactive browser viewport.
+              Describe a compact 3D scene, generate a textured GLB asset, and explore it in an interactive browser viewport.
             </p>
             <div className="bb-hero-actions">
-              <Link href="/templates" className="bb-button bb-button-primary">Generate a 3D template <ArrowRight size={17} /></Link>
+              <Link href="/ai-3d-scene-generator" className="bb-button bb-button-primary">Generate a 3D scene <ArrowRight size={17} /></Link>
               <a href="#features" className="bb-button bb-button-ghost">View all features</a>
             </div>
             <HeroPrompt />
@@ -239,12 +240,12 @@ export function BerryBoxHome() {
         <section className="bb-section bb-skills" id="features">
           <div className="bb-shell">
             <div className="bb-feature-heading">
-              <SectionHeading eyebrow="FOUR CREATOR TOOLS" title="Four engines. One creative universe." copy="Scene and character workflows are active. Complete template and game generation are on the roadmap." />
+              <SectionHeading eyebrow="FOUR CREATOR TOOLS" title="Four engines. One creative universe." copy="The scene workflow is live. Character, template, and complete game generation continue on the roadmap." />
               <div className="bb-feature-heading-count"><strong>04</strong><span>AI CREATOR<br />SYSTEMS</span></div>
             </div>
             <div className="bb-feature-showcase">
-              {features.map(({ icon: Icon, number, title, copy, status, active, image, imageAlt }) => (
-                <article className={active ? "bb-feature-card bb-feature-active" : "bb-feature-card bb-feature-coming"} key={title}>
+              {features.map(({ icon: Icon, number, title, copy, status, active, image, imageAlt, ...feature }) => {
+                const card = <article className={active ? "bb-feature-card bb-feature-active" : "bb-feature-card bb-feature-coming"}>
                   <div className="bb-feature-card-media"><Image src={image} alt={imageAlt} fill sizes="(max-width: 800px) 100vw, 50vw" /></div>
                   <div className="bb-feature-card-shade" />
                   <span className="bb-feature-number">{number}</span>
@@ -256,8 +257,10 @@ export function BerryBoxHome() {
                     <p>{copy}</p>
                   </div>
                   <div className="bb-feature-card-rail"><span>AI-POWERED</span><span>{active ? "ACTIVE PREVIEW" : "ROADMAP"}</span></div>
-                </article>
-              ))}
+                </article>;
+                const href = "href" in feature && typeof feature.href === "string" ? feature.href : undefined;
+                return href ? <Link className="bb-feature-link" href={href} key={title}>{card}</Link> : <article className="bb-feature-card-frame" key={title}>{card}</article>;
+              })}
             </div>
           </div>
         </section>
@@ -359,11 +362,11 @@ export function BerryBoxHome() {
 
         <section className="bb-section bb-foundation">
           <div className="bb-shell">
-            <SectionHeading eyebrow="PROVIDER FOUNDATION" title="The right API for each 3D job." copy="Keys stay server-side and can be added in Vercel. The interface exposes only readiness—not credentials." />
+            <SectionHeading eyebrow="PRODUCTION FOUNDATION" title="Every scene survives the browser." copy="Meshy keys stay server-side while PostgreSQL jobs and private Blob files keep generation durable and owned." />
             <div className="bb-foundation-grid">
-              <article><span>LIVE</span><Cuboid size={27} /><h3>fal.ai gateway</h3><p>One server-side key for queued 3D generation and normalized GLB output.</p></article>
-              <article><span>LIVE</span><UserRound size={27} /><h3>Character pipeline</h3><p>Generate textured humanoids with pose control, automatic rigging, animation, and engine-friendly exports.</p></article>
-              <article><span>CONFIGURABLE</span><Code2 size={27} /><h3>3D model catalog</h3><p>Add approved fal endpoints through Vercel while keeping every provider credential on the server.</p></article>
+              <article><span>LIVE</span><Cuboid size={27} /><h3>Meshy scene pipeline</h3><p>Preview geometry, add 2K PBR textures, and save a private textured GLB.</p></article>
+              <article><span>DURABLE</span><UserRound size={27} /><h3>Owned scene history</h3><p>Browser-bound ownership, idempotent jobs, real progress, retry-safe storage, and deletion.</p></article>
+              <article><span>PRIVATE</span><Code2 size={27} /><h3>Application storage</h3><p>Generated GLBs and thumbnails move promptly from temporary provider URLs into private Blob storage.</p></article>
             </div>
           </div>
         </section>

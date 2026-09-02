@@ -1,71 +1,88 @@
 # BerryBox
 
-A prompt-to-3D creator workspace built with Next.js, React, TypeScript, Three.js, fal.ai, and OpenAI.
+BerryBox is a Next.js 16 creator experience centered on a durable AI 3D Scene Generator. It turns one prompt into a compact textured scene, saves the resulting GLB privately, and keeps a browser-owned generation history.
 
-## Pages and APIs
+## Active product
 
-- `/` — product site with the three focused prompt-based 3D features.
-- `/templates` — enabled AI 3D Template Generator with a configurable fal model selector and an interactive GLB viewer.
-- `/characters` — enabled prompt-to-3D Character Generator with pose, geometry, rigging, animation, and export controls.
-- `/workflow` — prompt-to-3D Game Generator, **Coming soon**.
-- `/api/3d/templates` — fal readiness, configured model catalog, and queued task creation.
-- `/api/3d/templates/[id]` — normalized fal queue status and GLB result.
-- `/api/3d/characters` — character readiness, model catalog, and queued generation.
-- `/api/3d/characters/[id]` — normalized character, rig, animation, GLB, and FBX result.
-- `/api/3d/providers` — provider readiness without exposing API keys.
-- `/editor` and `/play` remain internal 3D prototype routes, but are not presented as active product features.
+- `/ai-3d-scene-generator` — prompt, real generation progress, interactive `<model-viewer>` preview, private history, deletion, and GLB download.
+- `/api/3d-scenes` — creates idempotent jobs and returns paginated browser-owned history.
+- `/api/3d-scenes/[id]` — returns or deletes one owned terminal job.
+- `/api/3d-scenes/[id]/model` — streams an owned GLB inline to the viewer.
+- `/api/3d-scenes/[id]/download` — streams an owned GLB with an attachment filename.
+- `/api/3d-scenes/[id]/thumbnail` — streams an owned thumbnail.
+- `/api/cron/3d-scenes` — advances durable Meshy jobs in bounded batches.
 
-## Run locally
+The old Fal-backed template and character generators and their API routes have been removed. Character, template, and complete-game generation remain roadmap concepts only.
 
-Use Node.js 22 or later. Install with `npm install`, copy the variable names from `.env.example` into an ignored `.env.local`, and configure your provider keys. Never commit credentials.
+## Generation workflow
 
-Run `npm run dev` and open the URL printed by Next.js. The 3D viewer works without a provider key; generation requires the fal variables below.
+1. The submission route validates the prompt, applies a daily browser quota and global concurrency limit, and creates a PostgreSQL job before any paid provider call.
+2. The Vercel cron worker claims jobs with a database lease so concurrent invocations cannot submit the same stage.
+3. Meshy preview mode creates geometry using the configured model, triangle topology, remeshing, and a 30,000 polygon target.
+4. After the preview succeeds, Meshy refine mode creates 2K PBR textures and a GLB.
+5. The worker validates Meshy asset hosts, performs bounded downloads, and copies the GLB and thumbnail into private Vercel Blob storage.
+6. Only after the required GLB is stored does the job become Ready.
 
-## Vercel environment variables
+The browser only polls BerryBox job status. Closing it does not stop generation. Ambiguous paid POST failures are marked `review_required` instead of being blindly resubmitted. Storage failures retry from the completed Meshy task without regenerating the scene.
 
-Set these for Production, Preview, and Development as appropriate, then redeploy:
+## Ownership and limits
+
+This repository does not yet contain user authentication or billing. BerryBox therefore assigns an opaque, HTTP-only, SameSite owner cookie to each browser. Every history, status, model, thumbnail, download, and deletion route checks that owner ID server-side.
+
+The default allowance is three jobs per browser in 24 hours with two active jobs globally. These are application quotas, not a statement of Meshy provider cost. Change them with the server-only environment variables below. Replace the anonymous cookie owner with your account user ID when authentication is introduced.
+
+## Required services
+
+1. Create a Meshy API key.
+2. Connect a PostgreSQL provider through the Vercel Marketplace and expose `DATABASE_URL`. For Supabase on Vercel, use the transaction pooler; the server disables prepared statements for Supavisor compatibility.
+3. Create and connect a **private** Vercel Blob store.
+4. Add a random `CRON_SECRET` of at least 16 characters.
+5. Deploy. `vercel.json` invokes the worker every minute.
+
+The application creates its table defensively on first use. The equivalent reviewed migration is at `db/migrations/001_create_3d_scene_jobs.sql` for teams that run migrations separately.
+
+## Environment variables
+
+Copy `.env.example` to `.env.local` and configure:
 
 ```text
-FAL_KEY=<server-only fal key>
-BERRYBOX_ENABLE_3D_TEMPLATE_GENERATION=true
-FAL_3D_TEMPLATE_MODELS=fal-ai/hunyuan3d-v3/text-to-3d
-BERRYBOX_ENABLE_3D_CHARACTER_GENERATION=true
-FAL_3D_CHARACTER_MODELS=meshy/v7/text-to-3d
-FAL_3D_GAME_MODELS=<optional comma-separated fal endpoints for the coming game feature>
-OPENAI_API_KEY=<server-only OpenAI key for the coming game feature>
-PEXELS_API_KEY=<optional future source-video search key>
+MESHY_API_KEY=<server-only Meshy key>
+MESHY_TEXT_TO_3D_MODEL=meshy-7
+DATABASE_URL=<PostgreSQL connection string>
+BLOB_READ_WRITE_TOKEN=<private Vercel Blob token>
+CRON_SECRET=<random secret, at least 16 characters>
+
+MESHY_DAILY_SCENE_QUOTA=3
+MESHY_GLOBAL_CONCURRENCY=2
+MESHY_WORKER_BATCH_SIZE=2
+MESHY_MAX_MODEL_BYTES=100000000
+MESHY_MAX_THUMBNAIL_BYTES=8000000
 ```
 
-Never prefix provider keys with `NEXT_PUBLIC_`. The app exposes only readiness and the configured public model IDs through `/api/3d/providers`.
+Supported model values are `meshy-5`, `meshy-6`, `meshy-7`, and `latest`; an unknown value falls back to `meshy-7`. Keys and provider URLs are never returned to the browser.
 
-`FAL_3D_TEMPLATE_MODELS` accepts up to 12 comma-separated fal endpoint IDs. The first model is the default, and every configured model appears in the generator selector. Only endpoints that accept a `prompt` input and return a GLB should be added to this group. Model IDs are checked against the server allowlist before any paid request is submitted.
+## Local development
 
-`FAL_3D_CHARACTER_MODELS` follows the same allowlist pattern. BerryBox provides enhanced character controls for `meshy/v7/text-to-3d` through fal, including textured output, A/T pose, humanoid rigging, basic locomotion, and an optional idle animation. Additional compatible character endpoints use prompt-only mode unless their input schema is added to the server adapter.
-
-## What works now
-
-- Sends a validated text prompt to the selected, server-approved fal text-to-3D endpoint.
-- Polls the asynchronous fal queue without exposing credentials.
-- Loads the returned GLB in a custom Three.js viewer with orbit, zoom, pan, lighting, automatic framing, and direct download.
-- Generates original humanoid characters with configurable pose, detailed or low-poly geometry, PBR materials, automatic rigging, and optional animation.
-- Plays the first animation clip in the Three.js character viewport and exposes available GLB and FBX downloads.
-- Links to free-source libraries: Poly Haven and Kenney (CC0), and Pexels video content under the Pexels license.
-- Keeps complete prompt-to-game generation visibly locked as coming soon.
-
-Generated files are hosted by the provider and may use expiring signed URLs. Download results you want to keep. BerryBox does not provide permanent model storage, authentication, or complete game generation yet.
-
-## Generation safety
-
-fal generation requires the key, an approved model ID, and the matching explicit feature flag. Template and character routes have separate per-process guards, but these are only an alpha safety layer; before public launch, add authentication, durable per-user quotas, and fal spending limits.
-
-Provider errors are normalized without returning raw provider messages, prompts, or secrets to the browser.
-
-## Scripts
+Use Node.js 22 or later:
 
 ```bash
+npm install
 npm run dev
-npm run lint
+```
+
+With the required services configured, advance jobs locally by invoking the worker with the same secret:
+
+```bash
+curl -H "Authorization: Bearer $CRON_SECRET" http://localhost:3000/api/cron/3d-scenes
+```
+
+Run the quality gates:
+
+```bash
 npm run typecheck
+npm run lint
 npm test
 npm run build
 ```
+
+Live Meshy generation consumes provider credits. It should only be tested after the real key, database, private Blob store, cron secret, and account spending controls are configured.

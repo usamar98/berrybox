@@ -178,13 +178,13 @@ function Hero() {
                 Create Game
               </Button>
               <Link
-                href="/templates"
+                href="/ai-3d-scene-generator"
                 className={cn(
                   buttonVariants({ variant: "secondary", size: "lg" }),
                 )}
               >
                 <Boxes className="h-5 w-5" />
-                Explore Templates
+                Generate 3D Scene
               </Link>
             </div>
             </form>

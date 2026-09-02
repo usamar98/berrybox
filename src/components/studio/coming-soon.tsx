@@ -16,10 +16,10 @@ export function ComingSoon() {
               <span className="bb-coming-status"><Clock3 size={13} /> COMING SOON</span>
               <p className="bb-kicker">3D GAME FROM A PROMPT</p>
               <h1>Describe the game.<br /><em>Then make it playable.</em></h1>
-              <p className="bb-coming-lead">A future OpenAI-powered workflow will turn a prompt into a validated game specification, with fal models available for generated media and 3D assets.</p>
+              <p className="bb-coming-lead">A future workflow will turn a prompt into a validated game specification, generated media, structured systems, and a playable 3D build.</p>
               <ul>{items.map((item) => <li key={item}><Check size={15} />{item}</li>)}</ul>
-              <div className="bb-coming-note"><Sparkles size={16} /><p><b>Not available in this release.</b><span>Templates and the AI-assisted builder are ready to explore today.</span></p></div>
-              <Link href="/templates" className="bb-button bb-button-primary">Generate a 3D template now <ArrowRight size={16} /></Link>
+              <div className="bb-coming-note"><Sparkles size={16} /><p><b>Not available in this release.</b><span>The AI 3D Scene Generator is ready to explore today.</span></p></div>
+              <Link href="/ai-3d-scene-generator" className="bb-button bb-button-primary">Generate a 3D scene now <ArrowRight size={16} /></Link>
             </div>
 
             <div className="bb-coming-visual">

@@ -3,8 +3,7 @@ import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 
 const productLinks = [
-  { href: "/templates", label: "3D Template Generator" },
-  { href: "/characters", label: "Character Creator" },
+  { href: "/ai-3d-scene-generator", label: "AI 3D Scene Generator" },
   { href: "/workflow", label: "3D Game Generator" },
 ];
 
@@ -26,7 +25,7 @@ export function SiteFooter() {
         </div>
         <div className="bb-footer-links"><p>PRODUCT</p>{productLinks.map((link) => <Link key={link.href} href={link.href}>{link.label}</Link>)}</div>
         <div className="bb-footer-links"><p>EXPLORE</p>{exploreLinks.map((link) => <Link key={link.href} href={link.href}>{link.label}</Link>)}</div>
-        <div className="bb-footer-links"><p>CREATE</p><Link href="/templates">Generate a 3D template <ArrowUpRight size={13} /></Link><Link href="/characters">Character creator <ArrowUpRight size={13} /></Link></div>
+        <div className="bb-footer-links"><p>CREATE</p><Link href="/ai-3d-scene-generator">Generate a 3D scene <ArrowUpRight size={13} /></Link><Link href="/#features">Explore creator tools <ArrowUpRight size={13} /></Link></div>
       </div>
       <div className="bb-footer-bottom">
         <span>© {new Date().getFullYear()} BERRYBOX</span>

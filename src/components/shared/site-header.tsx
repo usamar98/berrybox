@@ -8,7 +8,7 @@ import { ArrowRight, Menu, X } from "lucide-react";
 
 const navItems = [
   { href: "/#features", label: "Features" },
-  { href: "/templates", label: "3D Generator" },
+  { href: "/ai-3d-scene-generator", label: "AI Scene Generator" },
 ];
 
 export function SiteHeader() {
@@ -30,7 +30,7 @@ export function SiteHeader() {
             <Link
               key={item.href}
               href={item.href}
-              className={item.href === "/templates" && pathname === "/templates" ? "active" : undefined}
+              className={pathname === item.href ? "active" : undefined}
             >
               {item.label}
             </Link>
@@ -38,8 +38,8 @@ export function SiteHeader() {
         </nav>
 
         <div className="bb-header-action">
-          <Link href="/templates" className="bb-header-cta">
-            Generate 3D <ArrowRight size={14} />
+          <Link href="/ai-3d-scene-generator" className="bb-header-cta">
+            Generate Scene <ArrowRight size={14} />
           </Link>
         </div>
 
@@ -62,8 +62,8 @@ export function SiteHeader() {
                 {item.label}
               </Link>
             ))}
-            <Link href="/templates" onClick={() => setOpen(false)} className="bb-header-cta">
-              Generate 3D <ArrowRight size={14} />
+            <Link href="/ai-3d-scene-generator" onClick={() => setOpen(false)} className="bb-header-cta">
+              Generate Scene <ArrowRight size={14} />
             </Link>
           </div>
         </div>

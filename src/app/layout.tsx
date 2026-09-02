@@ -4,6 +4,7 @@ import { ToastProvider } from "@/components/shared/toast";
 import "./globals.css";
 import "./studio.css";
 import "./berrybox.css";
+import "./scene-generator.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -18,14 +19,14 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://berrybox.local"),
   title: {
-    default: "BerryBox - AI 3D Template Generator",
+    default: "BerryBox - AI 3D Scene Generator",
     template: "%s | BerryBox",
   },
   description:
-    "Create game-ready 3D template assets from prompts and inspect GLB results in an interactive Three.js viewer.",
+    "Create compact textured 3D scenes from prompts, explore them interactively, and download private GLB results.",
   keywords: [
     "AI 3D generator",
-    "3D game templates",
+    "3D scene generator",
     "text to 3D",
     "GLB viewer",
     "BerryBox",
@@ -38,7 +39,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "BerryBox",
     description:
-      "Describe a 3D template, generate a GLB asset, and inspect it in an interactive web viewer.",
+      "Describe a compact scene, generate a textured GLB asset, and inspect it in an interactive web viewer.",
     type: "website",
     images: ["/berrybox.png"],
   },
