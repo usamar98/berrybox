@@ -2,12 +2,12 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowRight,
-  ChevronRight,
   Code2,
   Cuboid,
   ExternalLink,
   Film,
   Gamepad2,
+  Layers3,
   Lock,
   UserRound,
 } from "lucide-react";
@@ -16,34 +16,41 @@ import { HeroPrompt } from "./hero-prompt";
 
 const features = [
   {
-    icon: Cuboid,
+    icon: Layers3,
     number: "01",
-    title: "Create a 3D game template using a prompt",
-    copy: "Generate a web-ready GLB template asset, inspect it from every angle, and download the result.",
-    status: "AVAILABLE NOW",
-    href: "/templates",
+    title: "AI 3D Scene Generator",
+    copy: "Compose environments, lighting, props, and spatial direction from one clear scene brief.",
+    status: "ACTIVE",
     active: true,
-    image: "/creator-media/template-generator.jpg",
-    imageAlt: "Aether's Fall action RPG cover artwork",
+    image: "/game-cards/3d-world-explorer.png",
+    imageAlt: "Floating fantasy world used as an AI 3D scene concept",
   },
   {
     icon: UserRound,
     number: "02",
-    title: "Create a 3D character using a prompt",
-    copy: "Generate an original textured humanoid, auto-rig it, preview its animation, and download the GLB or FBX.",
-    status: "AVAILABLE NOW",
-    href: "/characters",
+    title: "AI 3D Character Generator",
+    copy: "Shape original textured heroes with silhouette, style, pose, and animation direction.",
+    status: "ACTIVE",
     active: true,
     image: "/creator-media/character-generator.jpg",
     imageAlt: "Skyfall Heroes warrior cover artwork",
   },
   {
-    icon: Gamepad2,
+    icon: Cuboid,
     number: "03",
-    title: "Create a 3D game using a prompt",
-    copy: "A future workflow for generating structured game systems, scenes, and playable interactions.",
+    title: "AI 3D Game Template Generator",
+    copy: "Turn a game idea into a reusable 3D world template with structured assets and systems.",
     status: "COMING SOON",
-    href: "/workflow",
+    active: false,
+    image: "/creator-media/template-generator.jpg",
+    imageAlt: "Aether's Fall action RPG cover artwork",
+  },
+  {
+    icon: Gamepad2,
+    number: "04",
+    title: "AI 3D Game Generator",
+    copy: "Generate a complete playable 3D experience from a single creative direction.",
+    status: "COMING SOON",
     active: false,
     image: "/creator-media/game-generator.jpg",
     imageAlt: "Love's Horizon story game cover artwork",
@@ -169,6 +176,9 @@ const motionGridItems = [
   { kind: "concept", number: "03.4", concept: motionStories[2].concepts[3] },
 ] as const;
 
+const editorConceptNumbers = new Set(["02.1", "03.2", "02.3"]);
+const editorAssetLabels = ["TREE", "ROCK", "PROP", "FIRE", "CRATE"];
+
 const motionRainDrops = Array.from({ length: 84 }, (_, index) => ({
   id: `motion-rain-${index}`,
   style: {
@@ -228,15 +238,25 @@ export function BerryBoxHome() {
 
         <section className="bb-section bb-skills" id="features">
           <div className="bb-shell">
-            <SectionHeading eyebrow="THREE CREATOR TOOLS" title="Two are live. One is next." copy="Generate standalone 3D assets or build an original rigged character today. Complete prompt-to-game generation is the next workflow." />
-            <div className="bb-skill-grid bb-three-features">
-              {features.map(({ icon: Icon, number, title, copy, status, href, active, image, imageAlt }) => (
-                <Link className={active ? "bb-skill-card bb-feature-live" : "bb-skill-card bb-feature-locked"} href={href} key={title}>
-                  <div className="bb-skill-card-media"><Image src={image} alt={imageAlt} fill sizes="(max-width: 580px) 100vw, (max-width: 800px) 50vw, 33vw" /></div>
-                  <div className="bb-skill-top"><Icon size={23} /><span>{number}</span></div>
-                  <div className="bb-feature-status">{active ? <span /> : <Lock size={11} />}{status}</div>
-                  <h3>{title}</h3><p>{copy}</p><ChevronRight className="bb-card-arrow" size={18} />
-                </Link>
+            <div className="bb-feature-heading">
+              <SectionHeading eyebrow="FOUR CREATOR TOOLS" title="Four engines. One creative universe." copy="Scene and character workflows are active. Complete template and game generation are on the roadmap." />
+              <div className="bb-feature-heading-count"><strong>04</strong><span>AI CREATOR<br />SYSTEMS</span></div>
+            </div>
+            <div className="bb-feature-showcase">
+              {features.map(({ icon: Icon, number, title, copy, status, active, image, imageAlt }) => (
+                <article className={active ? "bb-feature-card bb-feature-active" : "bb-feature-card bb-feature-coming"} key={title}>
+                  <div className="bb-feature-card-media"><Image src={image} alt={imageAlt} fill sizes="(max-width: 800px) 100vw, 50vw" /></div>
+                  <div className="bb-feature-card-shade" />
+                  <span className="bb-feature-number">{number}</span>
+                  <div className="bb-feature-card-status">{active ? <i /> : <Lock size={12} />}{status}</div>
+                  <div className="bb-feature-card-body">
+                    <Icon size={25} />
+                    <span>CREATOR ENGINE / {number}</span>
+                    <h3>{title}</h3>
+                    <p>{copy}</p>
+                  </div>
+                  <div className="bb-feature-card-rail"><span>AI-POWERED</span><span>{active ? "ACTIVE PREVIEW" : "ROADMAP"}</span></div>
+                </article>
               ))}
             </div>
           </div>
@@ -281,9 +301,10 @@ export function BerryBoxHome() {
                   }
 
                   const { concept } = item;
+                  const isEditorConcept = editorConceptNumbers.has(item.number);
 
                   return (
-                    <article className="bb-motion-card bb-motion-concept" key={item.number}>
+                    <article className={isEditorConcept ? "bb-motion-card bb-motion-concept bb-motion-editor-card" : "bb-motion-card bb-motion-concept"} key={item.number}>
                       <div className="bb-motion-card-bar">
                         <span><Cuboid size={11} /> {item.number} / COVER CONCEPT</span>
                         <span>READY</span>
@@ -291,6 +312,31 @@ export function BerryBoxHome() {
                       <div className="bb-motion-media">
                         <Image className="bb-motion-concept-art" src={concept.image} alt={concept.alt} fill sizes="(max-width: 580px) 100vw, (max-width: 1100px) 50vw, 33vw" />
                         <div className="bb-motion-shade" />
+                        {isEditorConcept ? (
+                          <div className="bb-concept-editor" aria-hidden="true">
+                            <div className="bb-concept-editor-top">
+                              <strong><Cuboid size={9} /> BerryBox Studio</strong>
+                              <span className="active">World</span><span>Gameplay</span><span>NPCs</span><span>Assets</span>
+                              <b>Publish</b>
+                            </div>
+                            <div className="bb-concept-editor-left">
+                              <span className="bb-editor-avatar">AI</span>
+                              <strong>Scene Director</strong>
+                              <p>What should we add to this world?</p>
+                              <small>+ ADD OBJECT</small>
+                            </div>
+                            <div className="bb-concept-editor-right">
+                              <strong>Systems</strong>
+                              <small>GAME SYSTEMS</small>
+                              <span><i /> Health</span><span><i /> Inventory</span><span><i /> Quest</span><span><i /> Combat</span>
+                            </div>
+                            <div className="bb-concept-editor-assets">
+                              <strong>ASSETS</strong>
+                              {editorAssetLabels.map((label) => <span key={label}><i />{label}</span>)}
+                            </div>
+                            <span className="bb-editor-crosshair">+</span>
+                          </div>
+                        ) : null}
                       </div>
                       <div className="bb-motion-copy">
                         <div>
