@@ -57,6 +57,18 @@ const motionStories = [
     copy: "Cinematic motion reference for combat, environments, and moment-to-moment game feel.",
     video: "/creator-media/world-motion-01.mp4",
     href: "https://grok.com/imagine/post/eabcf470-58fd-4def-a82e-3eb9cd7fea31",
+    concepts: [
+      {
+        title: "Qubo Explorer",
+        image: "/creator-media/showcase-qubo-explorer.jpg",
+        alt: "Qubo Explorer 3D puzzle adventure cover artwork",
+      },
+      {
+        title: "Chronicles of Empire",
+        image: "/creator-media/showcase-chronicles-empire.jpg",
+        alt: "Chronicles of Empire fantasy warfare cover artwork",
+      },
+    ],
   },
   {
     number: "02",
@@ -64,6 +76,18 @@ const motionStories = [
     copy: "Character-led motion reference for silhouettes, abilities, and animated presentation.",
     video: "/creator-media/world-motion-02.mp4",
     href: "https://grok.com/imagine/post/b238362d-e8fb-40f0-ac5f-20ba75ec5734",
+    concepts: [
+      {
+        title: "Legends of the Shattered Dimension",
+        image: "/creator-media/showcase-shattered-dimension.jpg",
+        alt: "Legends of the Shattered Dimension fantasy RPG cover artwork",
+      },
+      {
+        title: "Nightmare's Embrace",
+        image: "/creator-media/showcase-nightmares-embrace.jpg",
+        alt: "Nightmare's Embrace survival horror cover artwork",
+      },
+    ],
   },
   {
     number: "03",
@@ -71,14 +95,19 @@ const motionStories = [
     copy: "A moving world study for lighting, scale, pacing, and the final playable mood.",
     video: "/creator-media/world-motion-03.mp4",
     href: "https://grok.com/imagine/post/4d7b40ab-2283-4c6b-8711-c2d6223a6856",
+    concepts: [
+      {
+        title: "Legends of Aeterna",
+        image: "/creator-media/showcase-legends-aeterna.jpg",
+        alt: "Legends of Aeterna fantasy action cover artwork",
+      },
+      {
+        title: "Geometrix",
+        image: "/creator-media/showcase-geometrix.jpg",
+        alt: "Geometrix colorful 3D puzzle adventure cover artwork",
+      },
+    ],
   },
-];
-
-const assetLayers = [
-  { label: "Hero weapon", image: "/creator-media/layer-sword.png", alt: "Large futuristic sword", width: 768, height: 409, className: "bb-layer-wide" },
-  { label: "Armor detail", image: "/creator-media/layer-shoulder-pads.png", alt: "Blue futuristic shoulder armor", width: 144, height: 144, className: "" },
-  { label: "World crystal", image: "/creator-media/layer-crystals.png", alt: "Glowing blue crystal", width: 18, height: 96, className: "" },
-  { label: "World flora", image: "/creator-media/layer-mushrooms.png", alt: "Glowing blue mushroom", width: 74, height: 74, className: "" },
 ];
 
 function SectionHeading({ eyebrow, title, copy }: { eyebrow: string; title: string; copy?: string }) {
@@ -130,36 +159,35 @@ export function BerryBoxHome() {
 
         <section className="bb-section bb-creator-showcase">
           <div className="bb-shell">
-            <SectionHeading eyebrow="WORLDS IN MOTION" title="See the idea become a living world." copy="Cinematic studies and production-ready asset layers give every generated world a clearer visual direction." />
-            <div className="bb-motion-grid">
+            <SectionHeading eyebrow="WORLDS IN MOTION" title="See the idea become a living world." copy="Three cinematic studies paired with six game-cover concepts reveal different directions for characters, environments, and playable worlds." />
+            <div className="bb-motion-rows">
               {motionStories.map((story) => (
-                <article className="bb-motion-card" key={story.video}>
-                  <video src={story.video} autoPlay muted loop playsInline controls preload="metadata" aria-label={`${story.title} motion reference`} />
-                  <div className="bb-motion-shade" />
-                  <span className="bb-motion-number"><Film size={13} /> {story.number} / MOTION STUDY</span>
-                  <div className="bb-motion-copy">
-                    <h3>{story.title}</h3>
-                    <p>{story.copy}</p>
-                    <a href={story.href} target="_blank" rel="noreferrer">View original <ExternalLink size={13} /></a>
-                  </div>
-                </article>
+                <div className="bb-motion-row" key={story.video}>
+                  <article className="bb-motion-card bb-motion-video">
+                    <video src={story.video} autoPlay muted loop playsInline controls preload="metadata" aria-label={`${story.title} motion reference`} />
+                    <div className="bb-motion-shade" />
+                    <span className="bb-motion-number"><Film size={13} /> {story.number} / MOTION STUDY</span>
+                    <div className="bb-motion-copy">
+                      <h3>{story.title}</h3>
+                      <p>{story.copy}</p>
+                      <a href={story.href} target="_blank" rel="noreferrer">View original <ExternalLink size={13} /></a>
+                    </div>
+                  </article>
+                  {story.concepts.map((concept, index) => (
+                    <article className="bb-motion-card bb-motion-concept" key={concept.image}>
+                      <div className="bb-motion-concept-backdrop" aria-hidden="true">
+                        <Image src={concept.image} alt="" fill sizes="(max-width: 800px) 100vw, 33vw" />
+                      </div>
+                      <Image className="bb-motion-concept-art" src={concept.image} alt={concept.alt} fill sizes="(max-width: 800px) 100vw, 33vw" />
+                      <div className="bb-motion-shade" />
+                      <span className="bb-motion-number"><Cuboid size={13} /> {story.number}.{index + 1} / COVER CONCEPT</span>
+                      <div className="bb-motion-copy">
+                        <h3>{concept.title}</h3>
+                      </div>
+                    </article>
+                  ))}
+                </div>
               ))}
-            </div>
-
-            <div className="bb-layer-shelf">
-              <div className="bb-layer-heading">
-                <span>ASSET LAYERS</span>
-                <h3>Details that sell the world.</h3>
-                <p>Weapons, armor, crystals, and bioluminescent flora ready to guide the next generation.</p>
-              </div>
-              <div className="bb-layer-grid">
-                {assetLayers.map((asset) => (
-                  <figure className={`bb-layer-card ${asset.className}`} key={asset.label}>
-                    <Image src={asset.image} alt={asset.alt} width={asset.width} height={asset.height} sizes={asset.className ? "40vw" : "18vw"} />
-                    <figcaption>{asset.label}</figcaption>
-                  </figure>
-                ))}
-              </div>
             </div>
           </div>
         </section>
