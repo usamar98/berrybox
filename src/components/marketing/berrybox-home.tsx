@@ -169,6 +169,18 @@ const motionGridItems = [
   { kind: "concept", number: "03.4", concept: motionStories[2].concepts[3] },
 ] as const;
 
+const motionRainDrops = Array.from({ length: 84 }, (_, index) => ({
+  id: `motion-rain-${index}`,
+  style: {
+    left: `${(index * 37) % 101}%`,
+    top: `${(index * 47) % 101}%`,
+    height: `${10 + ((index * 11) % 28)}px`,
+    opacity: 0.18 + ((index * 13) % 42) / 100,
+    animationDelay: `-${((index * 17) % 76) / 10}s`,
+    animationDuration: `${3.2 + ((index * 7) % 24) / 10}s`,
+  },
+}));
+
 function SectionHeading({ eyebrow, title, copy }: { eyebrow: string; title: string; copy?: string }) {
   return (
     <div className="bb-section-heading">
@@ -231,43 +243,70 @@ export function BerryBoxHome() {
         </section>
 
         <section className="bb-section bb-creator-showcase">
+          <div className="bb-motion-rain" aria-hidden="true">
+            {motionRainDrops.map((drop) => <span key={drop.id} style={drop.style} />)}
+          </div>
           <div className="bb-shell">
             <SectionHeading eyebrow="WORLDS IN MOTION" title="See the idea become a living world." copy="Three cinematic studies move through twelve game-cover concepts and distinct visual directions." />
-            <div className="bb-motion-grid">
-              {motionGridItems.map((item) => {
-                if (item.kind === "motion") {
-                  const { story } = item;
+            <div className="bb-motion-board">
+              <div className="bb-motion-board-bar">
+                <span><Cuboid size={13} /> BerryBox / visual library</span>
+                <span><i /> LIVE CREATOR BOARD</span>
+              </div>
+              <div className="bb-motion-grid">
+                {motionGridItems.map((item) => {
+                  if (item.kind === "motion") {
+                    const { story } = item;
+
+                    return (
+                      <article className="bb-motion-card bb-motion-video" key={`motion-${story.number}`}>
+                        <div className="bb-motion-card-bar">
+                          <span><Film size={11} /> {story.number} / MOTION STUDY</span>
+                          <span>LIVE</span>
+                        </div>
+                        <div className="bb-motion-media">
+                          <video src={story.video} autoPlay muted loop playsInline controls preload="metadata" aria-label={`${story.title} motion reference`} />
+                          <div className="bb-motion-shade" />
+                        </div>
+                        <div className="bb-motion-copy">
+                          <div>
+                            <span>PLAYABLE WORLD STUDY</span>
+                            <h3>{story.title}</h3>
+                            <p>{story.copy}</p>
+                          </div>
+                          <a href={story.href} target="_blank" rel="noreferrer" aria-label={`View the original ${story.title} motion study`}>Open <ExternalLink size={12} /></a>
+                        </div>
+                      </article>
+                    );
+                  }
+
+                  const { concept } = item;
 
                   return (
-                    <article className="bb-motion-card bb-motion-video" key={`motion-${story.number}`}>
-                      <video src={story.video} autoPlay muted loop playsInline controls preload="metadata" aria-label={`${story.title} motion reference`} />
-                      <div className="bb-motion-shade" />
-                      <span className="bb-motion-number"><Film size={13} /> {story.number} / MOTION STUDY</span>
+                    <article className="bb-motion-card bb-motion-concept" key={item.number}>
+                      <div className="bb-motion-card-bar">
+                        <span><Cuboid size={11} /> {item.number} / COVER CONCEPT</span>
+                        <span>READY</span>
+                      </div>
+                      <div className="bb-motion-media">
+                        <Image className="bb-motion-concept-art" src={concept.image} alt={concept.alt} fill sizes="(max-width: 580px) 100vw, (max-width: 1100px) 50vw, 33vw" />
+                        <div className="bb-motion-shade" />
+                      </div>
                       <div className="bb-motion-copy">
-                        <h3>{story.title}</h3>
-                        <p>{story.copy}</p>
-                        <a href={story.href} target="_blank" rel="noreferrer">View original <ExternalLink size={13} /></a>
+                        <div>
+                          <span>ART DIRECTION / GAME COVER</span>
+                          <h3>{concept.title}</h3>
+                        </div>
+                        <span className="bb-motion-ready"><i /> CONCEPT</span>
                       </div>
                     </article>
                   );
-                }
-
-                const { concept } = item;
-
-                return (
-                  <article className="bb-motion-card bb-motion-concept" key={item.number}>
-                    <div className="bb-motion-concept-backdrop" aria-hidden="true">
-                      <Image src={concept.image} alt="" fill sizes="(max-width: 800px) 100vw, 33vw" />
-                    </div>
-                    <Image className="bb-motion-concept-art" src={concept.image} alt={concept.alt} fill sizes="(max-width: 800px) 100vw, 33vw" />
-                    <div className="bb-motion-shade" />
-                    <span className="bb-motion-number"><Cuboid size={13} /> {item.number} / COVER CONCEPT</span>
-                    <div className="bb-motion-copy">
-                      <h3>{concept.title}</h3>
-                    </div>
-                  </article>
-                );
-              })}
+                })}
+              </div>
+              <div className="bb-motion-board-footer">
+                <span>15 VISUAL DIRECTIONS</span>
+                <span>AI-POWERED / CREATOR-FOCUSED / GAME-READY</span>
+              </div>
             </div>
           </div>
         </section>
