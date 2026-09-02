@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import {
@@ -15,7 +16,7 @@ import {
   Sparkles,
   WandSparkles,
 } from "lucide-react";
-import { buttonVariants } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Panel } from "@/components/ui/panel";
 import { GameImage } from "@/components/shared/game-image";
@@ -38,13 +39,13 @@ const steps = [
   {
     title: "Forge a plan",
     description:
-      "The future AI pipeline turns intent into scenes, files, assets, and tasks.",
+      "OpenAI turns the idea into a validated game configuration with mechanics, enemies, collectibles, and a goal.",
     icon: BrainCircuit,
   },
   {
     title: "Tune the preview",
     description:
-      "Use the editor layout to inspect files, assets, and a playable-style canvas.",
+      "Play the generated level, inspect its files, and ask the AI to tune the configuration.",
     icon: Gamepad2,
   },
 ];
@@ -53,7 +54,7 @@ const featureSections = [
   {
     title: "AI game generation",
     description:
-      "Future prompt-to-game flows are modeled as provider interfaces, making it straightforward to plug in OpenAI, Anthropic, Gemini, or another engine later.",
+      "A live OpenAI generation route converts plain-language ideas into safe, structured RPG configurations for the playable preview.",
     icon: WandSparkles,
     tone: "teal",
   },
@@ -89,9 +90,9 @@ const featureSections = [
 
 const faqs = [
   {
-    question: "Does this static MVP call a real AI model?",
+    question: "Does BerryBox call a real AI model?",
     answer:
-      "No. It uses mock data and placeholder TypeScript interfaces so API-backed generation can be added later.",
+      "Yes. The prompt and editor chat use OpenAI to create and revise a validated game configuration.",
   },
   {
     question: "Can I connect auth, storage, and payments later?",
@@ -106,7 +107,7 @@ const faqs = [
   {
     question: "Is the editor a real game engine?",
     answer:
-      "The editor is a static mock interface with a CSS game canvas and Phaser-style code preview.",
+      "The first playable renderer supports keyboard movement, health, enemy collisions, collectibles, scoring, and generated configuration updates.",
   },
 ];
 
@@ -126,6 +127,14 @@ export function LandingPage() {
 
 function Hero() {
   const [prompt, setPrompt] = useState("");
+  const router = useRouter();
+
+  function handleCreate(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const cleanPrompt = prompt.trim();
+    if (cleanPrompt.length < 3) return;
+    router.push(`/editor?prompt=${encodeURIComponent(cleanPrompt)}`);
+  }
 
   return (
     <section className="relative isolate min-h-[100svh] w-full overflow-hidden px-4 py-20 text-center sm:px-6 lg:px-8">
@@ -140,12 +149,13 @@ function Hero() {
         transition={{ duration: 0.6, ease: "easeOut" }}
         className="relative z-10 mx-auto flex max-w-4xl flex-col items-center"
       >
-        <h5 className="text-balance text-5xl font-black tracking-tight text-white sm:text-6xl lg:text-7xl">
+        <h1 className="text-balance text-5xl font-black tracking-tight text-white sm:text-6xl lg:text-7xl">
           Build playable games from a prompt
-        </h5>
+        </h1>
 
         <div className="mx-auto mt-10 w-full max-w-3xl">
           <Panel className="p-3 text-left">
+            <form onSubmit={handleCreate}>
             <label htmlFor="game-prompt" className="sr-only">
               Game prompt
             </label>
@@ -153,20 +163,20 @@ function Hero() {
               id="game-prompt"
               value={prompt}
               onChange={(event) => setPrompt(event.target.value)}
+              maxLength={500}
               placeholder="Describe the game you want to create…"
               className="min-h-32 w-full resize-none rounded-lg border border-white/10 bg-[#090f1a]/90 p-4 text-base leading-7 text-white outline-none transition placeholder:text-slate-500 focus:border-teal-200/45"
             />
             <div className="mt-3 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <Link
-                href="/editor"
-                className={cn(
-                  buttonVariants({ variant: "primary", size: "lg" }),
-                  "w-full sm:w-auto",
-                )}
+              <Button
+                type="submit"
+                size="lg"
+                disabled={prompt.trim().length < 3}
+                className="w-full sm:w-auto"
               >
                 <Rocket className="h-5 w-5" />
-                Creating
-              </Link>
+                Create Game
+              </Button>
               <Link
                 href="/templates"
                 className={cn(
@@ -177,6 +187,7 @@ function Hero() {
                 Explore Templates
               </Link>
             </div>
+            </form>
           </Panel>
         </div>
       </motion.div>
@@ -190,7 +201,7 @@ function HowItWorks() {
         <Reveal>
           <SectionHeading
             title="How it works"
-            description="A static, client-ready story for how prompt-to-game generation will behave once real providers are connected."
+            description="A working prompt-to-game loop that turns an idea into a validated configuration, playable level, and editable project."
             align="center"
           />
         </Reveal>
@@ -224,7 +235,7 @@ function GenerationSystem() {
         <Reveal>
           <SectionHeading
             title="AI game generation"
-            description="The current product is static, but the architecture anticipates a real generation pipeline: prompt, plan, files, assets, project storage, and deployment."
+            description="The first live generation pipeline connects prompt, structured game plan, playable preview, generated files, and browser-local project saving."
           />
           <Link
             href="/roadmap"

@@ -8,9 +8,7 @@ import { ArrowRight, Menu, X } from "lucide-react";
 
 const navItems = [
   { href: "/#features", label: "Features" },
-  { href: "/#workspace", label: "Workspace" },
   { href: "/templates", label: "3D Generator" },
-  { href: "/#sources", label: "Free Sources" },
 ];
 
 export function SiteHeader() {

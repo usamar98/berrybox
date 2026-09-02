@@ -10,8 +10,6 @@ const productLinks = [
 
 const exploreLinks = [
   { href: "/#features", label: "Features" },
-  { href: "/#workspace", label: "Workspace" },
-  { href: "/#sources", label: "Free Sources" },
 ];
 
 export function SiteFooter() {
