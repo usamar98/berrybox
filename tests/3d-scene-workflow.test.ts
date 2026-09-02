@@ -152,3 +152,12 @@ test("owner cookie is stable and the Supabase migration is private and durable",
   const store = await readFile("src/lib/3d-scenes/store.ts", "utf8");
   assert.match(store, /prepare: false/);
 });
+
+test("Hobby deployment uses owner-scoped polling with a daily cron fallback", async () => {
+  const cron = JSON.parse(await readFile("vercel.json", "utf8")) as { crons: Array<{ schedule: string }> };
+  assert.equal(cron.crons[0]?.schedule, "0 0 * * *");
+  const route = await readFile("src/app/api/3d-scenes/[id]/route.ts", "utf8");
+  assert.match(route, /processOwnedSceneJob\(id, owner\.ownerId\)/);
+  const client = await readFile("src/components/scenes/scene-generator-page.tsx", "utf8");
+  assert.match(client, /method: "POST"/);
+});

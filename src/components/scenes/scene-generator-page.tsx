@@ -74,7 +74,7 @@ export function SceneGeneratorPage({ initialPrompt = "" }: { initialPrompt?: str
     if (!selected || !workingStatuses.has(selected.status)) return;
     const interval = window.setInterval(async () => {
       try {
-        const response = await fetch(`/api/3d-scenes/${selected.id}`, { cache: "no-store" });
+        const response = await fetch(`/api/3d-scenes/${selected.id}`, { method: "POST", cache: "no-store" });
         const data = await response.json() as { scene?: PublicScene; error?: string };
         if (!response.ok || !data.scene) throw new Error(data.error || "Scene status could not be refreshed.");
         setSelected(data.scene);

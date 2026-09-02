@@ -3,8 +3,10 @@ import { sameOrigin, sceneOwner, withOwnerCookie } from "@/lib/3d-scenes/owner";
 import { deleteSceneAssets } from "@/lib/3d-scenes/storage";
 import { deleteSceneJob, getSceneJob } from "@/lib/3d-scenes/store";
 import { toPublicScene } from "@/lib/3d-scenes/types";
+import { processOwnedSceneJob } from "@/lib/3d-scenes/workflow";
 
 export const runtime = "nodejs";
+export const maxDuration = 300;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -17,6 +19,26 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     return Response.json({ scene: toPublicScene(job) }, { headers: withOwnerCookie({ "Cache-Control": "no-store" }, owner.setCookie) });
   } catch {
     return Response.json({ error: "Scene status is temporarily unavailable." }, { status: 503, headers: withOwnerCookie(undefined, owner.setCookie) });
+  }
+}
+
+export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const owner = sceneOwner(request);
+  const headers = withOwnerCookie({ "Cache-Control": "no-store" }, owner.setCookie);
+  const { id } = await params;
+  if (!sameOrigin(request)) return Response.json({ error: "Cross-origin requests are not allowed." }, { status: 403, headers });
+  if (!UUID.test(id)) return Response.json({ error: "Invalid scene ID." }, { status: 400, headers });
+  try {
+    const existing = await getSceneJob(id, owner.ownerId);
+    if (!existing) return Response.json({ error: "Scene not found." }, { status: 404, headers });
+    if (["queued", "processing"].includes(existing.status)) {
+      await processOwnedSceneJob(id, owner.ownerId);
+    }
+    const job = await getSceneJob(id, owner.ownerId);
+    if (!job) return Response.json({ error: "Scene not found." }, { status: 404, headers });
+    return Response.json({ scene: toPublicScene(job) }, { headers });
+  } catch {
+    return Response.json({ error: "Scene processing is temporarily unavailable." }, { status: 503, headers });
   }
 }
 

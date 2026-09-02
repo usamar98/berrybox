@@ -254,6 +254,23 @@ export async function claimNextSceneJob() {
   return rows[0] ? rowToJob(rows[0] as Row) : undefined;
 }
 
+export async function claimOwnedSceneJob(id: string, ownerId: string) {
+  await ensureSceneSchema();
+  const sql = sqlClient();
+  const leaseToken = randomUUID();
+  const rows = await sql`
+    UPDATE berrybox_3d_scene_jobs
+    SET lease_token = ${leaseToken}, lease_expires_at = now() + interval '4 minutes',
+        attempts = attempts + 1, updated_at = now()
+    WHERE id = ${id}
+      AND owner_id = ${ownerId}
+      AND status IN ('queued', 'processing')
+      AND (lease_expires_at IS NULL OR lease_expires_at < now())
+    RETURNING *
+  `;
+  return rows[0] ? rowToJob(rows[0] as Row) : undefined;
+}
+
 export async function deleteSceneJob(id: string, ownerId: string) {
   const sql = sqlClient();
   const rows = await sql`

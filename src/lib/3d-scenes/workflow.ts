@@ -1,7 +1,7 @@
 import { sceneConfig } from "./config";
 import { createGeometryTask, createTextureTask, getMeshyTask, MeshyError, type MeshyTask } from "./meshy";
 import { saveSceneAssets } from "./storage";
-import { claimNextSceneJob, updateClaimedSceneJob } from "./store";
+import { claimNextSceneJob, claimOwnedSceneJob, updateClaimedSceneJob } from "./store";
 import type { SceneJob } from "./types";
 
 export type WorkflowDependencies = {
@@ -72,8 +72,7 @@ export async function advanceSceneJob(job: SceneJob, dependencies: WorkflowDepen
   };
 }
 
-export async function processNextSceneJob() {
-  const job = await claimNextSceneJob();
+async function processClaimedSceneJob(job: SceneJob | undefined) {
   if (!job || !job.leaseToken) return { processed: false };
   try {
     const stale = Date.now() - new Date(job.createdAt).getTime() > 3 * 60 * 60 * 1000;
@@ -93,6 +92,14 @@ export async function processNextSceneJob() {
     await updateClaimedSceneJob(job.id, job.leaseToken, patch);
     return { processed: true, id: job.id, status: patch.status, stage: patch.stage };
   }
+}
+
+export async function processNextSceneJob() {
+  return processClaimedSceneJob(await claimNextSceneJob());
+}
+
+export async function processOwnedSceneJob(id: string, ownerId: string) {
+  return processClaimedSceneJob(await claimOwnedSceneJob(id, ownerId));
 }
 
 export async function processSceneBatch() {
