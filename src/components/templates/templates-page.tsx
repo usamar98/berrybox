@@ -6,13 +6,10 @@ import { FormEvent, useEffect, useState } from "react";
 import {
   AlertCircle,
   ArrowLeft,
-  Box,
   Check,
   CircleCheck,
   Cuboid,
   Download,
-  ExternalLink,
-  Film,
   Gamepad2,
   LoaderCircle,
   Lock,
@@ -44,12 +41,6 @@ type TaskState = {
   progress: number;
   modelUrl?: string;
 };
-
-const sources = [
-  { label: "Poly Haven", meta: "CC0 3D models", href: "https://polyhaven.com/models", icon: Cuboid },
-  { label: "Kenney", meta: "CC0 game assets", href: "https://kenney.nl/assets", icon: Gamepad2 },
-  { label: "Pexels", meta: "Free source videos", href: "https://www.pexels.com/videos/", icon: Film },
-];
 
 export function TemplatesPage({ initialPrompt }: { initialPrompt: string }) {
   const [prompt, setPrompt] = useState(initialPrompt || "A modular ancient forest portal with mossy stone, low-poly edges, and game-ready proportions");
@@ -147,22 +138,12 @@ export function TemplatesPage({ initialPrompt }: { initialPrompt: string }) {
           </div>
 
           <div className="bb-generator-shell">
-            <aside className="bb-generator-sources">
-              <div className="bb-generator-brand"><Box size={17} /> Sources</div>
-              <p>FREE LIBRARIES</p>
-              {sources.map(({ label, meta, href, icon: Icon }) => (
-                <a href={href} target="_blank" rel="noreferrer" key={label}><Icon size={16} /><span><b>{label}</b><small>{meta}</small></span><ExternalLink size={12} /></a>
-              ))}
-              <div className="bb-source-license"><CircleCheck size={15} /><p><b>Source-aware</b><span>Poly Haven and Kenney are CC0. Pexels uses its own free-content license.</span></p></div>
-            </aside>
-
             <div className="bb-generator-center">
               <div className="bb-generator-toolbar">
                 <div><span className="active"><Rotate3D size={13} /> 3D View</span><span>GLB output</span></div>
                 {task?.modelUrl ? <a href={task.modelUrl} target="_blank" rel="noreferrer"><Download size={13} /> Download GLB</a> : <span className="disabled"><Download size={13} /> Download GLB</span>}
               </div>
               <ModelViewer modelUrl={task?.modelUrl} />
-              <SourceMediaCarousel onUsePrompt={useMediaPrompt} />
             </div>
 
             <aside className="bb-generator-prompt">
@@ -187,6 +168,8 @@ export function TemplatesPage({ initialPrompt }: { initialPrompt: string }) {
               <p className="bb-credit-note">Generation consumes provider credits and can take several minutes. The server key is never sent to the browser.</p>
             </aside>
           </div>
+
+          <SourceMediaCarousel onUsePrompt={useMediaPrompt} />
 
           <div className="bb-locked-products">
             <Link href="/characters"><UserRound size={21} /><div><span>AVAILABLE NOW</span><h2>Create a 3D character using a prompt</h2><p>Generate, auto-rig, animate, preview, and download an original game character.</p></div><CircleCheck size={17} /></Link>

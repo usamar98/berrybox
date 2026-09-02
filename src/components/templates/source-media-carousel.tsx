@@ -1,8 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { ChevronLeft, ChevronRight, ExternalLink, Film, ImageIcon, Pause, Play, Sparkles } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { ExternalLink, Film, ImageIcon, Pause, Play, Sparkles } from "lucide-react";
+import { useRef, useState } from "react";
 
 type MediaItem = {
   id: string;
@@ -101,41 +101,6 @@ function VideoPreview({ item }: { item: MediaItem }) {
 }
 
 export function SourceMediaCarousel({ onUsePrompt }: { onUsePrompt: (prompt: string) => void }) {
-  const trackRef = useRef<HTMLDivElement>(null);
-  const scrollFrame = useRef<number | null>(null);
-  const [activeIndex, setActiveIndex] = useState(0);
-
-  const goTo = useCallback((index: number) => {
-    const nextIndex = (index + mediaItems.length) % mediaItems.length;
-    const card = trackRef.current?.querySelectorAll<HTMLElement>("[data-media-card]")[nextIndex];
-    if (!card || !trackRef.current) return;
-    trackRef.current.scrollTo({ left: card.offsetLeft - 1, behavior: "smooth" });
-    setActiveIndex(nextIndex);
-  }, []);
-
-  function updateActiveCard() {
-    if (scrollFrame.current !== null) cancelAnimationFrame(scrollFrame.current);
-    scrollFrame.current = requestAnimationFrame(() => {
-      const track = trackRef.current;
-      if (!track) return;
-      const cards = Array.from(track.querySelectorAll<HTMLElement>("[data-media-card]"));
-      let nearest = 0;
-      let distance = Number.POSITIVE_INFINITY;
-      for (let index = 0; index < cards.length; index += 1) {
-        const nextDistance = Math.abs(cards[index].offsetLeft - track.scrollLeft);
-        if (nextDistance < distance) {
-          distance = nextDistance;
-          nearest = index;
-        }
-      }
-      setActiveIndex(nearest);
-    });
-  }
-
-  useEffect(() => () => {
-    if (scrollFrame.current !== null) cancelAnimationFrame(scrollFrame.current);
-  }, []);
-
   return (
     <section className="bb-media-deck" aria-label="Curated 3D image and video references">
       <div className="bb-media-deck-head">
@@ -143,20 +108,16 @@ export function SourceMediaCarousel({ onUsePrompt }: { onUsePrompt: (prompt: str
           <b>Curated source deck</b>
           <span>4 images · 2 motion clips · click any prompt to use it</span>
         </div>
-        <div className="bb-media-controls">
-          <span>{String(activeIndex + 1).padStart(2, "0")} / {String(mediaItems.length).padStart(2, "0")}</span>
-          <button type="button" onClick={() => goTo(activeIndex - 1)} aria-label="Previous source"><ChevronLeft size={15} /></button>
-          <button type="button" onClick={() => goTo(activeIndex + 1)} aria-label="Next source"><ChevronRight size={15} /></button>
-        </div>
+        <span className="bb-media-count">06 CURATED REFERENCES</span>
       </div>
 
-      <div className="bb-media-track" ref={trackRef} onScroll={updateActiveCard} tabIndex={0}>
+      <div className="bb-media-track">
         {mediaItems.map((item) => (
           <article className="bb-media-card" data-media-card key={item.id}>
             <div className="bb-media-preview">
               {item.kind === "video"
                 ? <VideoPreview item={item} />
-                : <Image src={item.preview} alt={`${item.title} reference`} fill sizes="220px" />}
+                : <Image src={item.preview} alt={`${item.title} reference`} fill loading={item.id === "ancient-forest" ? "eager" : "lazy"} sizes="(max-width: 580px) 100vw, (max-width: 900px) 50vw, 33vw" />}
               <span className="bb-media-kind">{item.kind === "video" ? <Film size={10} /> : <ImageIcon size={10} />}{item.kind}</span>
               <div className="bb-media-gradient" />
             </div>
@@ -171,10 +132,6 @@ export function SourceMediaCarousel({ onUsePrompt }: { onUsePrompt: (prompt: str
             </div>
           </article>
         ))}
-      </div>
-
-      <div className="bb-media-progress" aria-label="Choose source slide">
-        {mediaItems.map((item, index) => <button type="button" className={index === activeIndex ? "active" : ""} onClick={() => goTo(index)} aria-label={`Show ${item.title}`} aria-current={index === activeIndex ? "true" : undefined} key={item.id} />)}
       </div>
     </section>
   );
