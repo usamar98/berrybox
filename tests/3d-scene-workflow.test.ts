@@ -197,5 +197,9 @@ test("the scene viewer exposes direct 360-degree camera controls", async () => {
   assert.match(viewer, /cameraOrbit = "0deg 75deg 105%"/);
   assert.match(viewer, /auto-rotate-delay="300"/);
   assert.match(viewer, /rotation-per-second="32deg"/);
+  assert.match(viewer, /addEventListener\("load", handleLoad\)/);
+  assert.match(viewer, /addEventListener\("poster-dismissed", handleLoad\)/);
+  assert.match(viewer, /viewer\.loaded/);
+  assert.doesNotMatch(viewer, /onLoad=/);
   assert.match(viewer, /LIVE 3D/);
 });

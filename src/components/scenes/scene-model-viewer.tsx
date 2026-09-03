@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Box, Expand, Move3D, Rotate3D, ZoomIn, ZoomOut } from "lucide-react";
 
 type ViewerElement = HTMLElement & {
+  loaded: boolean;
   autoRotate: boolean;
   cameraOrbit: string;
   fieldOfView: string;
@@ -27,6 +28,36 @@ export function SceneModelViewer({ src, poster, prompt }: { src?: string; poster
     });
     return () => { active = false; };
   }, []);
+
+  useEffect(() => {
+    const viewer = viewerRef.current;
+    if (!viewer || !registered || !src) return;
+
+    const handleLoad = () => {
+      setLoadedSrc(src);
+      setViewerFailure(undefined);
+    };
+    const handleError = () => {
+      setLoadedSrc(undefined);
+      setViewerFailure({ src, message: "The generated GLB could not be rendered. You can still download the model." });
+    };
+
+    // model-viewer dispatches native custom-element events. React's synthetic
+    // onLoad handler is not reliable here, so subscribe on the element itself.
+    viewer.addEventListener("load", handleLoad);
+    viewer.addEventListener("poster-dismissed", handleLoad);
+    viewer.addEventListener("error", handleError);
+
+    // A cached GLB can finish before this effect subscribes to the load event.
+    const loadedFrame = viewer.loaded ? window.requestAnimationFrame(handleLoad) : 0;
+
+    return () => {
+      if (loadedFrame) window.cancelAnimationFrame(loadedFrame);
+      viewer.removeEventListener("load", handleLoad);
+      viewer.removeEventListener("poster-dismissed", handleLoad);
+      viewer.removeEventListener("error", handleError);
+    };
+  }, [registered, src]);
 
   const viewerError = viewerFailure && (!viewerFailure.src || viewerFailure.src === src) ? viewerFailure.message : "";
   const controlsReady = Boolean(src && registered && loadedSrc === src);
@@ -87,14 +118,6 @@ export function SceneModelViewer({ src, poster, prompt }: { src?: string; poster
             interaction-prompt-style="wiggle"
             interaction-prompt-threshold="1200"
             loading="eager"
-            onLoad={() => {
-              setLoadedSrc(src);
-              setViewerFailure(undefined);
-            }}
-            onError={() => {
-              setLoadedSrc(undefined);
-              setViewerFailure({ src, message: "The generated GLB could not be rendered. You can still download the model." });
-            }}
           />
         ) : poster ? (
           // The poster is the user's generated thumbnail, not a substitute output.
