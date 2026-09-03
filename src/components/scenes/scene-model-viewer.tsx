@@ -2,160 +2,247 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Box, Expand, Move3D, Rotate3D, ZoomIn, ZoomOut } from "lucide-react";
+import * as THREE from "three";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { KTX2Loader } from "three/examples/jsm/loaders/KTX2Loader.js";
+import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.js";
 
-type ViewerElement = HTMLElement & {
-  loaded: boolean;
-  modelIsVisible: boolean;
-  autoRotate: boolean;
-  cameraOrbit: string;
-  fieldOfView: string;
-  resetTurntableRotation: (theta?: number) => void;
-  jumpCameraToGoal: () => void;
-  updateFraming: () => void;
-  zoom: (keyPresses: number) => void;
+type ViewerRuntime = {
+  camera: THREE.PerspectiveCamera;
+  controls: OrbitControls;
+  renderer: THREE.WebGLRenderer;
 };
 
-type ViewerErrorEvent = CustomEvent<{
-  type?: "loadfailure" | "webglcontextlost";
-  sourceError?: unknown;
-}>;
+function disposeModel(root: THREE.Object3D) {
+  root.traverse((object) => {
+    const mesh = object as THREE.Mesh;
+    mesh.geometry?.dispose();
+    const materials = Array.isArray(mesh.material) ? mesh.material : mesh.material ? [mesh.material] : [];
+    for (const material of materials) {
+      for (const value of Object.values(material)) {
+        if (value instanceof THREE.Texture) value.dispose();
+      }
+      material.dispose();
+    }
+  });
+}
+
+function frameModel(root: THREE.Object3D, camera: THREE.PerspectiveCamera, controls: OrbitControls) {
+  root.updateMatrixWorld(true);
+  const bounds = new THREE.Box3().setFromObject(root);
+  const size = bounds.getSize(new THREE.Vector3());
+  const center = bounds.getCenter(new THREE.Vector3());
+  const largestSide = Math.max(size.x, size.y, size.z);
+  if (!Number.isFinite(largestSide) || largestSide <= 0) throw new Error("The GLB contains no visible scene geometry.");
+
+  root.position.sub(center);
+  root.updateMatrixWorld(true);
+
+  const distance = (largestSide / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)))) * 1.45;
+  camera.near = Math.max(distance / 100, 0.01);
+  camera.far = Math.max(distance * 100, 100);
+  camera.position.set(distance * 0.72, distance * 0.42, distance);
+  camera.updateProjectionMatrix();
+
+  controls.target.set(0, 0, 0);
+  controls.minDistance = Math.max(distance * 0.18, 0.02);
+  controls.maxDistance = distance * 6;
+  controls.update();
+  controls.saveState();
+}
 
 export function SceneModelViewer({ src, poster, prompt }: { src?: string; poster?: string; prompt?: string }) {
-  const viewerRef = useRef<ViewerElement | null>(null);
-  const [registered, setRegistered] = useState(false);
+  const hostRef = useRef<HTMLDivElement | null>(null);
+  const runtimeRef = useRef<ViewerRuntime | null>(null);
+  const autoRotateRef = useRef(true);
   const [loadedSrc, setLoadedSrc] = useState<string>();
   const [autoRotate, setAutoRotate] = useState(true);
   const [viewerFailure, setViewerFailure] = useState<{ src?: string; message: string }>();
   const [reload, setReload] = useState<{ src?: string; attempt: number }>({ attempt: 0 });
 
   const reloadAttempt = reload.src === src ? reload.attempt : 0;
-  const modelSrc = src ? `${src}${src.includes("?") ? "&" : "?"}viewerAttempt=${reloadAttempt}` : undefined;
+  const modelSrc = src ? `${src}${src.includes("?") ? "&" : "?"}threeAttempt=${reloadAttempt}` : undefined;
 
   useEffect(() => {
-    let active = true;
-    import("@google/model-viewer").then(({ ModelViewerElement }) => {
-      // Keep compressed Meshy models working even when a browser or network
-      // blocks model-viewer's default third-party decoder CDNs.
-      ModelViewerElement.dracoDecoderLocation = "/model-viewer/draco/";
-      ModelViewerElement.ktx2TranscoderLocation = "/model-viewer/basis/";
-      if (active) setRegistered(true);
-    }).catch(() => {
-      if (active) setViewerFailure({ message: "The interactive viewer could not be loaded. You can still download the GLB." });
-    });
-    return () => { active = false; };
-  }, []);
+    const host = hostRef.current;
+    if (!host || !modelSrc || !src) return;
 
-  useEffect(() => {
-    const viewer = viewerRef.current;
-    if (!viewer || !registered || !modelSrc || !src) return;
+    let disposed = false;
+    let loadedModel: THREE.Object3D | undefined;
+    let renderer: THREE.WebGLRenderer;
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(38, 1, 0.01, 1_000);
 
-    const handleLoad = () => {
-      setLoadedSrc(modelSrc);
-      setViewerFailure(undefined);
+    try {
+      renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: "high-performance" });
+    } catch (error) {
+      console.error("WebGL renderer could not start", error);
+      const frame = window.requestAnimationFrame(() => {
+        setViewerFailure({ src: modelSrc, message: "WebGL is unavailable in this browser. Enable hardware acceleration or download the GLB." });
+      });
+      return () => window.cancelAnimationFrame(frame);
+    }
+
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.05;
+    host.replaceChildren(renderer.domElement);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.065;
+    controls.enablePan = true;
+    controls.screenSpacePanning = true;
+    controls.autoRotate = autoRotateRef.current;
+    controls.autoRotateSpeed = 1.65;
+    controls.zoomSpeed = 0.85;
+    controls.rotateSpeed = 0.72;
+    controls.panSpeed = 0.65;
+    runtimeRef.current = { camera, controls, renderer };
+
+    scene.add(new THREE.HemisphereLight(0xeaf2ff, 0x2a1d2b, 2.5));
+    const keyLight = new THREE.DirectionalLight(0xffffff, 3.2);
+    keyLight.position.set(4, 7, 6);
+    scene.add(keyLight);
+    const fillLight = new THREE.DirectionalLight(0xff8eb1, 1.35);
+    fillLight.position.set(-5, 2, -3);
+    scene.add(fillLight);
+
+    const resize = () => {
+      const width = Math.max(1, host.clientWidth);
+      const height = Math.max(1, host.clientHeight);
+      renderer.setSize(width, height, false);
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
     };
-    const handleError = (event: Event) => {
-      const detail = (event as ViewerErrorEvent).detail;
-      if (detail?.type === "webglcontextlost") return;
-      if (viewer.loaded || viewer.modelIsVisible) {
-        handleLoad();
-        return;
-      }
+    resize();
+    const resizeObserver = new ResizeObserver(resize);
+    resizeObserver.observe(host);
+
+    renderer.setAnimationLoop(() => {
+      controls.update();
+      renderer.render(scene, camera);
+    });
+
+    const dracoLoader = new DRACOLoader();
+    dracoLoader.setDecoderPath("/model-viewer/draco/");
+    dracoLoader.setDecoderConfig({ type: "wasm" });
+    const ktx2Loader = new KTX2Loader();
+    ktx2Loader.setTranscoderPath("/model-viewer/basis/");
+    ktx2Loader.detectSupport(renderer);
+    const loader = new GLTFLoader();
+    loader.setDRACOLoader(dracoLoader);
+    loader.setKTX2Loader(ktx2Loader);
+    loader.setMeshoptDecoder(MeshoptDecoder);
+
+    const fail = (error: unknown) => {
+      if (disposed) return;
+      console.error("Three.js GLB load failed", error);
       if (reloadAttempt === 0) {
         setReload({ src, attempt: 1 });
         return;
       }
-      console.error("3D model load failed", detail?.sourceError);
-      setLoadedSrc(undefined);
-      setViewerFailure({ src: modelSrc, message: "The 3D preview could not open this model. Retry the viewer or download the GLB." });
+      setViewerFailure({ src: modelSrc, message: "The 3D scene could not be decoded. Retry the viewer or download the GLB." });
     };
 
-    // model-viewer dispatches native custom-element events. React's synthetic
-    // onLoad handler is not reliable here, so subscribe on the element itself.
-    viewer.addEventListener("load", handleLoad);
-    viewer.addEventListener("poster-dismissed", handleLoad);
-    viewer.addEventListener("error", handleError);
-
-    // A cached GLB can finish before this effect subscribes to the load event.
-    const loadedFrame = viewer.loaded ? window.requestAnimationFrame(handleLoad) : 0;
+    loader.load(modelSrc, (gltf) => {
+      if (disposed) {
+        disposeModel(gltf.scene);
+        return;
+      }
+      try {
+        loadedModel = gltf.scene;
+        frameModel(loadedModel, camera, controls);
+        scene.add(loadedModel);
+        setLoadedSrc(modelSrc);
+        setViewerFailure(undefined);
+      } catch (error) {
+        disposeModel(gltf.scene);
+        loadedModel = undefined;
+        fail(error);
+      }
+    }, undefined, fail);
 
     return () => {
-      if (loadedFrame) window.cancelAnimationFrame(loadedFrame);
-      viewer.removeEventListener("load", handleLoad);
-      viewer.removeEventListener("poster-dismissed", handleLoad);
-      viewer.removeEventListener("error", handleError);
+      disposed = true;
+      resizeObserver.disconnect();
+      renderer.setAnimationLoop(null);
+      controls.dispose();
+      dracoLoader.dispose();
+      ktx2Loader.dispose();
+      if (loadedModel) disposeModel(loadedModel);
+      renderer.dispose();
+      renderer.domElement.remove();
+      if (runtimeRef.current?.renderer === renderer) runtimeRef.current = null;
     };
-  }, [modelSrc, registered, reloadAttempt, src]);
+  }, [modelSrc, reloadAttempt, src]);
 
   const viewerError = viewerFailure && (!viewerFailure.src || viewerFailure.src === modelSrc) ? viewerFailure.message : "";
-  const controlsReady = Boolean(modelSrc && registered && loadedSrc === modelSrc);
-
-  function retryModel() {
-    if (!src) return;
-    setLoadedSrc(undefined);
-    setViewerFailure(undefined);
-    setReload({ src, attempt: reloadAttempt + 1 });
-  }
+  const controlsReady = Boolean(modelSrc && loadedSrc === modelSrc);
 
   function toggleAutoRotate() {
     setAutoRotate((current) => {
       const next = !current;
-      if (viewerRef.current) viewerRef.current.autoRotate = next;
+      autoRotateRef.current = next;
+      if (runtimeRef.current) runtimeRef.current.controls.autoRotate = next;
       return next;
     });
   }
 
   function resetView() {
-    const viewer = viewerRef.current;
-    if (!viewer) return;
-    viewer.updateFraming();
-    viewer.cameraOrbit = "0deg 75deg 105%";
-    viewer.fieldOfView = "auto";
-    viewer.resetTurntableRotation(0);
-    viewer.jumpCameraToGoal();
-    viewer.autoRotate = true;
+    const runtime = runtimeRef.current;
+    if (!runtime) return;
+    runtime.controls.reset();
+    runtime.controls.autoRotate = true;
+    autoRotateRef.current = true;
+    runtime.controls.update();
     setAutoRotate(true);
   }
 
-  function zoom(amount: number) {
-    const viewer = viewerRef.current;
-    if (!viewer) return;
-    viewer.zoom(amount);
-    viewer.jumpCameraToGoal();
+  function zoom(inward: boolean) {
+    const runtime = runtimeRef.current;
+    if (!runtime) return;
+    const offset = runtime.camera.position.clone().sub(runtime.controls.target);
+    const nextDistance = THREE.MathUtils.clamp(
+      offset.length() * (inward ? 0.78 : 1.28),
+      runtime.controls.minDistance,
+      runtime.controls.maxDistance,
+    );
+    offset.setLength(nextDistance);
+    runtime.camera.position.copy(runtime.controls.target).add(offset);
+    runtime.controls.update();
+  }
+
+  function retryModel() {
+    if (!src) return;
+    setViewerFailure(undefined);
+    setReload({ src, attempt: reloadAttempt + 1 });
   }
 
   return (
     <div className="scene-viewer-shell">
       <div className="scene-viewer-toolbar" aria-label="3D preview controls">
-        <span><Box size={14} /> GLB PREVIEW</span>
+        <span><Box size={14} /> THREE.JS LIVE PREVIEW</span>
         <div>
           <button className={autoRotate && controlsReady ? "active" : undefined} type="button" onClick={toggleAutoRotate} aria-pressed={autoRotate} disabled={!controlsReady}><Rotate3D size={14} /> {autoRotate ? "Pause 360°" : "Auto 360°"}</button>
-          <button type="button" onClick={() => zoom(2)} disabled={!controlsReady}><ZoomIn size={14} /> Zoom in</button>
-          <button type="button" onClick={() => zoom(-2)} disabled={!controlsReady}><ZoomOut size={14} /> Zoom out</button>
+          <button type="button" onClick={() => zoom(true)} disabled={!controlsReady}><ZoomIn size={14} /> Zoom in</button>
+          <button type="button" onClick={() => zoom(false)} disabled={!controlsReady}><ZoomOut size={14} /> Zoom out</button>
           <button type="button" onClick={resetView} disabled={!controlsReady}><Expand size={14} /> Reset</button>
         </div>
       </div>
       <div className="scene-viewer-stage">
-        {modelSrc && registered ? (
-          <model-viewer
-            key={modelSrc}
-            ref={(node) => { viewerRef.current = node as ViewerElement | null; }}
-            src={modelSrc}
-            poster={poster}
-            alt={`Interactive 3D preview for: ${prompt || "generated scene"}`}
-            camera-controls
-            auto-rotate={autoRotate || undefined}
-            auto-rotate-delay="300"
-            rotation-per-second="32deg"
-            shadow-intensity="1.2"
-            environment-image="neutral"
-            exposure="1.05"
-            interaction-prompt="auto"
-            interaction-prompt-style="wiggle"
-            interaction-prompt-threshold="1200"
-            loading="eager"
+        {modelSrc ? (
+          <div
+            className="scene-three-host"
+            ref={hostRef}
+            role="img"
+            aria-label={`Interactive 3D preview for: ${prompt || "generated scene"}`}
+            style={poster && !controlsReady ? { backgroundImage: `url(${poster})` } : undefined}
           />
         ) : poster ? (
-          // The poster is the user's generated thumbnail, not a substitute output.
           <div className="scene-viewer-poster" style={{ backgroundImage: `url(${poster})` }} role="img" aria-label={`Preview image for ${prompt || "generated scene"}`} />
         ) : (
           <div className="scene-viewer-empty">
@@ -163,10 +250,9 @@ export function SceneModelViewer({ src, poster, prompt }: { src?: string; poster
             <p><b>Your scene will appear here</b><small>Generate a compact diorama, then orbit, zoom, and download the textured GLB.</small></p>
           </div>
         )}
-        {src && !registered && !viewerError ? <p className="scene-viewer-loading">Loading interactive viewer…</p> : null}
-        {modelSrc && registered && loadedSrc !== modelSrc && !viewerError ? <p className="scene-viewer-loading">Loading the 3D model…</p> : null}
+        {modelSrc && loadedSrc !== modelSrc && !viewerError ? <p className="scene-viewer-loading">Loading interactive 3D scene…</p> : null}
         {controlsReady ? <div className="scene-viewer-live"><span /> LIVE 3D</div> : null}
-        {controlsReady ? <div className="scene-viewer-help"><Move3D size={13} /> Drag to rotate · scroll or pinch to zoom</div> : null}
+        {controlsReady ? <div className="scene-viewer-help"><Move3D size={13} /> Left-drag to rotate · wheel to zoom · right-drag to pan</div> : null}
         {viewerError ? <div className="scene-viewer-error" role="alert"><span>{viewerError}</span><button type="button" onClick={retryModel}>Retry 3D view</button></div> : null}
       </div>
     </div>

@@ -213,23 +213,21 @@ test("Hobby deployment uses owner-scoped polling with a daily cron fallback", as
   assert.match(client, /method: "POST"/);
 });
 
-test("the scene viewer exposes direct 360-degree camera controls", async () => {
+test("the scene viewer uses Three.js loaders and direct mouse camera controls", async () => {
   const viewer = await readFile("src/components/scenes/scene-model-viewer.tsx", "utf8");
   const modelRoute = await readFile("src/app/api/3d-scenes/[id]/model/route.ts", "utf8");
   const store = await readFile("src/lib/3d-scenes/store.ts", "utf8");
-  assert.match(viewer, /camera-controls/);
-  assert.match(viewer, /viewer\.zoom\(amount\)/);
-  assert.match(viewer, /cameraOrbit = "0deg 75deg 105%"/);
-  assert.match(viewer, /auto-rotate-delay="300"/);
-  assert.match(viewer, /rotation-per-second="32deg"/);
-  assert.match(viewer, /addEventListener\("load", handleLoad\)/);
-  assert.match(viewer, /addEventListener\("poster-dismissed", handleLoad\)/);
-  assert.match(viewer, /viewer\.loaded/);
-  assert.match(viewer, /webglcontextlost/);
-  assert.match(viewer, /viewerAttempt=/);
-  assert.match(viewer, /dracoDecoderLocation = "\/model-viewer\/draco\/"/);
-  assert.match(viewer, /ktx2TranscoderLocation = "\/model-viewer\/basis\/"/);
-  assert.doesNotMatch(viewer, /onLoad=/);
+  assert.match(viewer, /new OrbitControls\(camera, renderer\.domElement\)/);
+  assert.match(viewer, /new GLTFLoader\(\)/);
+  assert.match(viewer, /loader\.setDRACOLoader\(dracoLoader\)/);
+  assert.match(viewer, /loader\.setKTX2Loader\(ktx2Loader\)/);
+  assert.match(viewer, /loader\.setMeshoptDecoder\(MeshoptDecoder\)/);
+  assert.match(viewer, /dracoLoader\.setDecoderPath\("\/model-viewer\/draco\/"\)/);
+  assert.match(viewer, /ktx2Loader\.setTranscoderPath\("\/model-viewer\/basis\/"\)/);
+  assert.match(viewer, /controls\.enableDamping = true/);
+  assert.match(viewer, /controls\.autoRotate = autoRotate/);
+  assert.match(viewer, /Left-drag to rotate/);
+  assert.match(viewer, /threeAttempt=/);
   assert.match(viewer, /LIVE 3D/);
   assert.match(modelRoute, /"Content-Range"/);
   assert.match(modelRoute, /status: asset\.contentRange \? 206 : 200/);
