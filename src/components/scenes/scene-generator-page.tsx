@@ -154,7 +154,7 @@ export function SceneGeneratorPage({ initialPrompt = "" }: { initialPrompt?: str
 
               <div className="scene-credit-card">
                 <span><Box size={15} /></span>
-                <p><b>2 generation stages</b><small>Geometry + textured PBR GLB · daily browser allowance {history?.quota ?? 3}</small></p>
+                <p><b>2 generation stages</b><small>Geometry + textured PBR GLB · daily browser allowance {history?.quota ?? 10}</small></p>
               </div>
               {history?.available === false ? <p className="scene-config-note"><AlertTriangle size={15} /> Setup required: {history.missingConfiguration.join(", ")}.</p> : null}
             </aside>

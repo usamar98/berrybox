@@ -150,6 +150,7 @@ export async function createSceneJob(input: {
       SELECT count(*)::integer AS daily_count
       FROM berrybox_3d_scene_jobs
       WHERE owner_id = ${input.ownerId} AND created_at >= now() - interval '24 hours'
+        AND (status IN ('queued', 'processing', 'ready') OR quota_units_settled > 0)
     `;
     if (Number(usage.daily_count) >= config.dailyQuota) {
       throw new SceneStoreError("quota", `Daily scene allowance reached (${config.dailyQuota} generations per browser).`);

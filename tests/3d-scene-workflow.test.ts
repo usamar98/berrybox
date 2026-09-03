@@ -1,8 +1,10 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { test } from "node:test";
+import { sceneConfig } from "../src/lib/3d-scenes/config";
 import { createGeometryTask, createTextureTask, getMeshyTask, MeshyError } from "../src/lib/3d-scenes/meshy";
 import { sceneOwner } from "../src/lib/3d-scenes/owner";
+import { validateGlb } from "../src/lib/3d-scenes/storage";
 import type { SceneJob } from "../src/lib/3d-scenes/types";
 import { advanceSceneJob, type WorkflowDependencies } from "../src/lib/3d-scenes/workflow";
 
@@ -24,6 +26,27 @@ const fixture: SceneJob = {
   createdAt: "2026-09-02T00:00:00.000Z",
   updatedAt: "2026-09-02T00:00:00.000Z",
 };
+
+test("the browser scene allowance supports iterative work and valid GLBs are enforced", () => {
+  const previous = process.env.MESHY_DAILY_SCENE_QUOTA;
+  try {
+    process.env.MESHY_DAILY_SCENE_QUOTA = "3";
+    assert.equal(sceneConfig().dailyQuota, 10);
+
+    const valid = Buffer.alloc(12);
+    valid.writeUInt32LE(0x46546c67, 0);
+    valid.writeUInt32LE(2, 4);
+    valid.writeUInt32LE(valid.byteLength, 8);
+    assert.doesNotThrow(() => validateGlb(valid));
+
+    const invalid = Buffer.from(valid);
+    invalid.writeUInt32LE(1, 4);
+    assert.throws(() => validateGlb(invalid), /invalid GLB/);
+  } finally {
+    if (previous === undefined) delete process.env.MESHY_DAILY_SCENE_QUOTA;
+    else process.env.MESHY_DAILY_SCENE_QUOTA = previous;
+  }
+});
 
 test("Meshy adapter submits current preview and refine payloads with server authorization", async (context) => {
   const previous = process.env.MESHY_API_KEY;
@@ -192,6 +215,8 @@ test("Hobby deployment uses owner-scoped polling with a daily cron fallback", as
 
 test("the scene viewer exposes direct 360-degree camera controls", async () => {
   const viewer = await readFile("src/components/scenes/scene-model-viewer.tsx", "utf8");
+  const modelRoute = await readFile("src/app/api/3d-scenes/[id]/model/route.ts", "utf8");
+  const store = await readFile("src/lib/3d-scenes/store.ts", "utf8");
   assert.match(viewer, /camera-controls/);
   assert.match(viewer, /viewer\.zoom\(amount\)/);
   assert.match(viewer, /cameraOrbit = "0deg 75deg 105%"/);
@@ -200,6 +225,13 @@ test("the scene viewer exposes direct 360-degree camera controls", async () => {
   assert.match(viewer, /addEventListener\("load", handleLoad\)/);
   assert.match(viewer, /addEventListener\("poster-dismissed", handleLoad\)/);
   assert.match(viewer, /viewer\.loaded/);
+  assert.match(viewer, /webglcontextlost/);
+  assert.match(viewer, /viewerAttempt=/);
+  assert.match(viewer, /dracoDecoderLocation = "\/model-viewer\/draco\/"/);
+  assert.match(viewer, /ktx2TranscoderLocation = "\/model-viewer\/basis\/"/);
   assert.doesNotMatch(viewer, /onLoad=/);
   assert.match(viewer, /LIVE 3D/);
+  assert.match(modelRoute, /"Content-Range"/);
+  assert.match(modelRoute, /status: asset\.contentRange \? 206 : 200/);
+  assert.match(store, /quota_units_settled > 0/);
 });

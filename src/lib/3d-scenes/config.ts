@@ -9,7 +9,9 @@ export function sceneConfig() {
   const requestedModel = process.env.MESHY_TEXT_TO_3D_MODEL || "meshy-7";
   return {
     model: SUPPORTED_MODELS.has(requestedModel) ? requestedModel : "meshy-7",
-    dailyQuota: integerSetting("MESHY_DAILY_SCENE_QUOTA", 3, 1, 100),
+    // Keep enough headroom for iterative scene design while retaining a
+    // server-side guard against unbounded paid provider usage.
+    dailyQuota: integerSetting("MESHY_DAILY_SCENE_QUOTA", 10, 10, 100),
     globalConcurrency: integerSetting("MESHY_GLOBAL_CONCURRENCY", 2, 1, 20),
     workerBatchSize: integerSetting("MESHY_WORKER_BATCH_SIZE", 2, 1, 10),
     maxModelBytes: integerSetting("MESHY_MAX_MODEL_BYTES", 100_000_000, 1_000_000, 250_000_000),

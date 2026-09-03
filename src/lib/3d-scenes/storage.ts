@@ -10,6 +10,17 @@ export class SceneStorageError extends Error {
   }
 }
 
+export function validateGlb(bytes: Uint8Array) {
+  if (bytes.byteLength < 12) throw new SceneStorageError("Meshy returned an incomplete GLB file.");
+  const header = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const magic = header.getUint32(0, true);
+  const version = header.getUint32(4, true);
+  const declaredLength = header.getUint32(8, true);
+  if (magic !== 0x46546c67 || version !== 2 || declaredLength !== bytes.byteLength) {
+    throw new SceneStorageError("Meshy returned an invalid GLB file.");
+  }
+}
+
 async function downloadBounded(source: string, maxBytes: number) {
   let url = new URL(source);
   for (let redirect = 0; redirect < 4; redirect += 1) {
@@ -52,6 +63,7 @@ export async function saveSceneAssets(input: { ownerId: string; jobId: string; m
   if (!process.env.BLOB_READ_WRITE_TOKEN) throw new SceneStorageError("Private Blob storage is not configured.");
   const config = sceneConfig();
   const model = await downloadBounded(input.modelUrl, config.maxModelBytes);
+  validateGlb(model.bytes);
   const modelPath = `3d-scenes/${input.ownerId}/${input.jobId}/scene.glb`;
   const savedModel = await put(modelPath, model.bytes, {
     access: "private",
@@ -78,10 +90,17 @@ export async function saveSceneAssets(input: { ownerId: string; jobId: string; m
   return { modelPath: savedModel.pathname, modelSizeBytes: model.bytes.byteLength, thumbnailPath, thumbnailMime };
 }
 
-export async function readSceneAsset(pathname: string) {
-  const result = await get(pathname, { access: "private" });
+export async function readSceneAsset(pathname: string, range?: string) {
+  const result = await get(pathname, { access: "private", headers: range ? { Range: range } : undefined });
   if (!result || result.statusCode !== 200) return undefined;
-  return { stream: result.stream, contentType: result.blob.contentType, size: result.blob.size };
+  return {
+    stream: result.stream,
+    contentType: result.blob.contentType,
+    size: result.blob.size,
+    contentRange: result.headers.get("content-range") || undefined,
+    acceptRanges: result.headers.get("accept-ranges") || undefined,
+    etag: result.blob.etag || undefined,
+  };
 }
 
 export async function deleteSceneAssets(paths: Array<string | undefined>) {

@@ -5,6 +5,7 @@ import { Box, Expand, Move3D, Rotate3D, ZoomIn, ZoomOut } from "lucide-react";
 
 type ViewerElement = HTMLElement & {
   loaded: boolean;
+  modelIsVisible: boolean;
   autoRotate: boolean;
   cameraOrbit: string;
   fieldOfView: string;
@@ -14,16 +15,31 @@ type ViewerElement = HTMLElement & {
   zoom: (keyPresses: number) => void;
 };
 
+type ViewerErrorEvent = CustomEvent<{
+  type?: "loadfailure" | "webglcontextlost";
+  sourceError?: unknown;
+}>;
+
 export function SceneModelViewer({ src, poster, prompt }: { src?: string; poster?: string; prompt?: string }) {
   const viewerRef = useRef<ViewerElement | null>(null);
   const [registered, setRegistered] = useState(false);
   const [loadedSrc, setLoadedSrc] = useState<string>();
   const [autoRotate, setAutoRotate] = useState(true);
   const [viewerFailure, setViewerFailure] = useState<{ src?: string; message: string }>();
+  const [reload, setReload] = useState<{ src?: string; attempt: number }>({ attempt: 0 });
+
+  const reloadAttempt = reload.src === src ? reload.attempt : 0;
+  const modelSrc = src ? `${src}${src.includes("?") ? "&" : "?"}viewerAttempt=${reloadAttempt}` : undefined;
 
   useEffect(() => {
     let active = true;
-    import("@google/model-viewer").then(() => { if (active) setRegistered(true); }).catch(() => {
+    import("@google/model-viewer").then(({ ModelViewerElement }) => {
+      // Keep compressed Meshy models working even when a browser or network
+      // blocks model-viewer's default third-party decoder CDNs.
+      ModelViewerElement.dracoDecoderLocation = "/model-viewer/draco/";
+      ModelViewerElement.ktx2TranscoderLocation = "/model-viewer/basis/";
+      if (active) setRegistered(true);
+    }).catch(() => {
       if (active) setViewerFailure({ message: "The interactive viewer could not be loaded. You can still download the GLB." });
     });
     return () => { active = false; };
@@ -31,15 +47,26 @@ export function SceneModelViewer({ src, poster, prompt }: { src?: string; poster
 
   useEffect(() => {
     const viewer = viewerRef.current;
-    if (!viewer || !registered || !src) return;
+    if (!viewer || !registered || !modelSrc || !src) return;
 
     const handleLoad = () => {
-      setLoadedSrc(src);
+      setLoadedSrc(modelSrc);
       setViewerFailure(undefined);
     };
-    const handleError = () => {
+    const handleError = (event: Event) => {
+      const detail = (event as ViewerErrorEvent).detail;
+      if (detail?.type === "webglcontextlost") return;
+      if (viewer.loaded || viewer.modelIsVisible) {
+        handleLoad();
+        return;
+      }
+      if (reloadAttempt === 0) {
+        setReload({ src, attempt: 1 });
+        return;
+      }
+      console.error("3D model load failed", detail?.sourceError);
       setLoadedSrc(undefined);
-      setViewerFailure({ src, message: "The generated GLB could not be rendered. You can still download the model." });
+      setViewerFailure({ src: modelSrc, message: "The 3D preview could not open this model. Retry the viewer or download the GLB." });
     };
 
     // model-viewer dispatches native custom-element events. React's synthetic
@@ -57,10 +84,17 @@ export function SceneModelViewer({ src, poster, prompt }: { src?: string; poster
       viewer.removeEventListener("poster-dismissed", handleLoad);
       viewer.removeEventListener("error", handleError);
     };
-  }, [registered, src]);
+  }, [modelSrc, registered, reloadAttempt, src]);
 
-  const viewerError = viewerFailure && (!viewerFailure.src || viewerFailure.src === src) ? viewerFailure.message : "";
-  const controlsReady = Boolean(src && registered && loadedSrc === src);
+  const viewerError = viewerFailure && (!viewerFailure.src || viewerFailure.src === modelSrc) ? viewerFailure.message : "";
+  const controlsReady = Boolean(modelSrc && registered && loadedSrc === modelSrc);
+
+  function retryModel() {
+    if (!src) return;
+    setLoadedSrc(undefined);
+    setViewerFailure(undefined);
+    setReload({ src, attempt: reloadAttempt + 1 });
+  }
 
   function toggleAutoRotate() {
     setAutoRotate((current) => {
@@ -101,10 +135,11 @@ export function SceneModelViewer({ src, poster, prompt }: { src?: string; poster
         </div>
       </div>
       <div className="scene-viewer-stage">
-        {src && registered ? (
+        {modelSrc && registered ? (
           <model-viewer
+            key={modelSrc}
             ref={(node) => { viewerRef.current = node as ViewerElement | null; }}
-            src={src}
+            src={modelSrc}
             poster={poster}
             alt={`Interactive 3D preview for: ${prompt || "generated scene"}`}
             camera-controls
@@ -129,10 +164,10 @@ export function SceneModelViewer({ src, poster, prompt }: { src?: string; poster
           </div>
         )}
         {src && !registered && !viewerError ? <p className="scene-viewer-loading">Loading interactive viewer…</p> : null}
-        {src && registered && loadedSrc !== src && !viewerError ? <p className="scene-viewer-loading">Loading the 3D model…</p> : null}
+        {modelSrc && registered && loadedSrc !== modelSrc && !viewerError ? <p className="scene-viewer-loading">Loading the 3D model…</p> : null}
         {controlsReady ? <div className="scene-viewer-live"><span /> LIVE 3D</div> : null}
         {controlsReady ? <div className="scene-viewer-help"><Move3D size={13} /> Drag to rotate · scroll or pinch to zoom</div> : null}
-        {viewerError ? <p className="scene-viewer-error" role="alert">{viewerError}</p> : null}
+        {viewerError ? <div className="scene-viewer-error" role="alert"><span>{viewerError}</span><button type="button" onClick={retryModel}>Retry 3D view</button></div> : null}
       </div>
     </div>
   );
