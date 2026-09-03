@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { test } from "node:test";
-import { createGeometryTask, createTextureTask, MeshyError } from "../src/lib/3d-scenes/meshy";
+import { createGeometryTask, createTextureTask, getMeshyTask, MeshyError } from "../src/lib/3d-scenes/meshy";
 import { sceneOwner } from "../src/lib/3d-scenes/owner";
 import type { SceneJob } from "../src/lib/3d-scenes/types";
 import { advanceSceneJob, type WorkflowDependencies } from "../src/lib/3d-scenes/workflow";
@@ -75,6 +75,34 @@ test("ambiguous paid Meshy submissions are explicitly non-retryable", async (con
       assert.ok(error instanceof MeshyError);
       assert.equal(error.ambiguous, true);
       return true;
+    });
+  } finally {
+    fetchMock.mock.restore();
+    if (previous === undefined) delete process.env.MESHY_API_KEY;
+    else process.env.MESHY_API_KEY = previous;
+  }
+});
+
+test("Meshy polling accepts nullable placeholders while a task is running", async (context) => {
+  const previous = process.env.MESHY_API_KEY;
+  process.env.MESHY_API_KEY = "test-meshy-key";
+  const fetchMock = context.mock.method(globalThis, "fetch", async () => Response.json({
+    id: "geometry-1",
+    status: "IN_PROGRESS",
+    progress: 42,
+    model_urls: null,
+    thumbnail_url: "",
+    task_error: null,
+  }));
+  try {
+    const task = await getMeshyTask("geometry-1");
+    assert.deepEqual(task, {
+      id: "geometry-1",
+      status: "IN_PROGRESS",
+      progress: 42,
+      model_urls: undefined,
+      thumbnail_url: undefined,
+      task_error: undefined,
     });
   } finally {
     fetchMock.mock.restore();

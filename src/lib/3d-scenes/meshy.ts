@@ -2,13 +2,30 @@ import { z } from "zod";
 
 const API_ROOT = "https://api.meshy.ai/openapi/v2/text-to-3d";
 const CreateResponse = z.object({ result: z.string().min(1).max(300) });
+
+// Meshy uses null and an empty string as placeholders while a task is still
+// running. Normalize those values at the provider boundary so polling does not
+// turn a healthy, paid task into a failed application job.
+const OptionalUrl = z.preprocess(
+  (value) => value === null || value === "" ? undefined : value,
+  z.string().url().optional(),
+);
+const OptionalModelUrls = z.preprocess(
+  (value) => value === null ? undefined : value,
+  z.object({ glb: OptionalUrl }).passthrough().optional(),
+);
+const OptionalTaskError = z.preprocess(
+  (value) => value === null ? undefined : value,
+  z.object({ message: z.string().optional() }).passthrough().optional(),
+);
+
 const TaskResponse = z.object({
   id: z.string(),
   status: z.enum(["PENDING", "IN_PROGRESS", "SUCCEEDED", "FAILED", "CANCELED"]),
   progress: z.number().min(0).max(100).catch(0),
-  model_urls: z.object({ glb: z.string().url().optional() }).optional(),
-  thumbnail_url: z.string().url().optional(),
-  task_error: z.object({ message: z.string().optional() }).optional(),
+  model_urls: OptionalModelUrls,
+  thumbnail_url: OptionalUrl,
+  task_error: OptionalTaskError,
 });
 
 export type MeshyTask = z.infer<typeof TaskResponse>;
