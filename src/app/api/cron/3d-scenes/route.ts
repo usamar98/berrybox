@@ -1,4 +1,5 @@
 import { processSceneBatch } from "@/lib/3d-scenes/workflow";
+import { processCharacterBatch } from "@/lib/3d-characters/workflow";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -9,8 +10,10 @@ export async function GET(request: Request) {
     return Response.json({ error: "Unauthorized." }, { status: 401 });
   }
   try {
-    return Response.json({ results: await processSceneBatch() }, { headers: { "Cache-Control": "no-store" } });
+    const scenes = await processSceneBatch();
+    const characters = await processCharacterBatch();
+    return Response.json({ results: { scenes, characters } }, { headers: { "Cache-Control": "no-store" } });
   } catch {
-    return Response.json({ error: "The scene worker could not run." }, { status: 503 });
+    return Response.json({ error: "The 3D generation worker could not run." }, { status: 503 });
   }
 }

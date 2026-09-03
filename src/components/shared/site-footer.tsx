@@ -4,6 +4,7 @@ import { ArrowUpRight } from "lucide-react";
 
 const productLinks = [
   { href: "/ai-3d-scene-generator", label: "AI 3D Scene Generator" },
+  { href: "/ai-3d-character-generator", label: "AI 3D Character Generator" },
   { href: "/workflow", label: "3D Game Generator" },
 ];
 
@@ -25,7 +26,7 @@ export function SiteFooter() {
         </div>
         <div className="bb-footer-links"><p>PRODUCT</p>{productLinks.map((link) => <Link key={link.href} href={link.href}>{link.label}</Link>)}</div>
         <div className="bb-footer-links"><p>EXPLORE</p>{exploreLinks.map((link) => <Link key={link.href} href={link.href}>{link.label}</Link>)}</div>
-        <div className="bb-footer-links"><p>CREATE</p><Link href="/ai-3d-scene-generator">Generate a 3D scene <ArrowUpRight size={13} /></Link><Link href="/#features">Explore creator tools <ArrowUpRight size={13} /></Link></div>
+        <div className="bb-footer-links"><p>CREATE</p><Link href="/ai-3d-scene-generator">Generate a 3D scene <ArrowUpRight size={13} /></Link><Link href="/ai-3d-character-generator">Generate a 3D character <ArrowUpRight size={13} /></Link><Link href="/#features">Explore creator tools <ArrowUpRight size={13} /></Link></div>
       </div>
       <div className="bb-footer-bottom">
         <span>© {new Date().getFullYear()} BERRYBOX</span>

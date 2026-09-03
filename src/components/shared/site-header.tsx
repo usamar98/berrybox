@@ -9,11 +9,15 @@ import { ArrowRight, Menu, X } from "lucide-react";
 const navItems = [
   { href: "/#features", label: "Features" },
   { href: "/ai-3d-scene-generator", label: "AI Scene Generator" },
+  { href: "/ai-3d-character-generator", label: "AI Character Generator" },
 ];
 
 export function SiteHeader() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const characterPage = pathname === "/ai-3d-character-generator";
+  const generatorHref = characterPage ? "/ai-3d-character-generator" : "/ai-3d-scene-generator";
+  const generatorLabel = characterPage ? "Generate Character" : "Generate Scene";
 
   return (
     <header className="bb-site-header">
@@ -38,8 +42,8 @@ export function SiteHeader() {
         </nav>
 
         <div className="bb-header-action">
-          <Link href="/ai-3d-scene-generator" className="bb-header-cta">
-            Generate Scene <ArrowRight size={14} />
+          <Link href={generatorHref} className="bb-header-cta">
+            {generatorLabel} <ArrowRight size={14} />
           </Link>
         </div>
 
@@ -62,8 +66,8 @@ export function SiteHeader() {
                 {item.label}
               </Link>
             ))}
-            <Link href="/ai-3d-scene-generator" onClick={() => setOpen(false)} className="bb-header-cta">
-              Generate Scene <ArrowRight size={14} />
+            <Link href={generatorHref} onClick={() => setOpen(false)} className="bb-header-cta">
+              {generatorLabel} <ArrowRight size={14} />
             </Link>
           </div>
         </div>

@@ -25,6 +25,7 @@ const TaskResponse = z.object({
   progress: z.number().min(0).max(100).catch(0),
   model_urls: OptionalModelUrls,
   thumbnail_url: OptionalUrl,
+  alpha_thumbnail_url: OptionalUrl,
   task_error: OptionalTaskError,
 });
 
@@ -44,8 +45,8 @@ export class MeshyError extends Error {
 function providerMessage(status: number) {
   if (status === 401 || status === 403) return "Meshy authentication failed. Check the server API key.";
   if (status === 402) return "The Meshy account does not have enough credits.";
-  if (status === 429) return "Meshy is rate-limiting scene generation. Try again later.";
-  if (status >= 400 && status < 500) return "Meshy rejected the scene generation request.";
+  if (status === 429) return "Meshy is rate-limiting 3D generation. Try again later.";
+  if (status >= 400 && status < 500) return "Meshy rejected the 3D generation request.";
   return "Meshy is temporarily unavailable.";
 }
 
@@ -78,7 +79,12 @@ async function meshyRequest(path: string, init: RequestInit, paidSubmission = fa
   }
 }
 
-export async function createGeometryTask(prompt: string, model: string) {
+export type MeshyGenerationOptions = {
+  alphaThumbnail?: boolean;
+  autoSize?: boolean;
+};
+
+export async function createGeometryTask(prompt: string, model: string, options: MeshyGenerationOptions = {}) {
   const data = await meshyRequest("", {
     method: "POST",
     body: JSON.stringify({
@@ -91,12 +97,14 @@ export async function createGeometryTask(prompt: string, model: string) {
       target_polycount: 30_000,
       target_formats: ["glb"],
       moderation: true,
+      ...(options.alphaThumbnail ? { alpha_thumbnail: true } : {}),
+      ...(options.autoSize ? { auto_size: true, origin_at: "bottom" } : {}),
     }),
   }, true);
   return CreateResponse.parse(data).result;
 }
 
-export async function createTextureTask(previewTaskId: string, model: string) {
+export async function createTextureTask(previewTaskId: string, model: string, options: MeshyGenerationOptions = {}) {
   const data = await meshyRequest("", {
     method: "POST",
     body: JSON.stringify({
@@ -107,6 +115,8 @@ export async function createTextureTask(previewTaskId: string, model: string) {
       texture_resolution: "2k",
       target_formats: ["glb"],
       moderation: true,
+      ...(options.alphaThumbnail ? { alpha_thumbnail: true } : {}),
+      ...(options.autoSize ? { auto_size: true, origin_at: "bottom" } : {}),
     }),
   }, true);
   return CreateResponse.parse(data).result;

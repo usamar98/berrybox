@@ -24,7 +24,7 @@ class ModelLoadError extends Error {
 
 function validateGlbBuffer(buffer: ArrayBuffer) {
   if (buffer.byteLength < 20) {
-    throw new ModelLoadError("The downloaded 3D file is incomplete. Generate the scene again or download the GLB to inspect it.");
+    throw new ModelLoadError("The downloaded 3D file is incomplete. Generate the model again or download the GLB to inspect it.");
   }
 
   const header = new DataView(buffer);
@@ -32,7 +32,7 @@ function validateGlbBuffer(buffer: ArrayBuffer) {
   const version = header.getUint32(4, true);
   const declaredLength = header.getUint32(8, true);
   if (magic !== 0x46546c67 || version !== 2) {
-    throw new ModelLoadError("The model endpoint did not return a valid GLB file. Generate the scene again.");
+    throw new ModelLoadError("The model endpoint did not return a valid GLB file. Generate the model again.");
   }
   if (declaredLength !== buffer.byteLength) {
     throw new ModelLoadError("The 3D file was cut off while downloading. Retry the 3D view.");
@@ -42,12 +42,12 @@ function validateGlbBuffer(buffer: ArrayBuffer) {
   let chunkIndex = 0;
   while (offset < buffer.byteLength) {
     if (offset + 8 > buffer.byteLength) {
-      throw new ModelLoadError("The downloaded GLB has a damaged chunk table. Generate the scene again.");
+      throw new ModelLoadError("The downloaded GLB has a damaged chunk table. Generate the model again.");
     }
     const chunkLength = header.getUint32(offset, true);
     const chunkType = header.getUint32(offset + 4, true);
     if (chunkIndex === 0 && chunkType !== 0x4e4f534a) {
-      throw new ModelLoadError("The downloaded GLB is missing its scene data. Generate the scene again.");
+      throw new ModelLoadError("The downloaded GLB is missing its model data. Generate the model again.");
     }
     offset += 8 + chunkLength;
     if (offset > buffer.byteLength) {
@@ -56,7 +56,7 @@ function validateGlbBuffer(buffer: ArrayBuffer) {
     chunkIndex += 1;
   }
   if (offset !== buffer.byteLength || chunkIndex === 0) {
-    throw new ModelLoadError("The downloaded GLB is incomplete. Generate the scene again.");
+    throw new ModelLoadError("The downloaded GLB is incomplete. Generate the model again.");
   }
 }
 
@@ -69,7 +69,7 @@ async function downloadModel(src: string, signal: AbortSignal) {
   });
   if (!response.ok) {
     const message = response.status === 404
-      ? "The saved 3D file is unavailable. Generate the scene again to create a fresh model."
+      ? "The saved 3D file is unavailable. Generate the model again to create a fresh file."
       : `The 3D file could not be downloaded (HTTP ${response.status}). Retry the 3D view.`;
     throw new ModelLoadError(message);
   }
@@ -116,7 +116,7 @@ function frameModel(root: THREE.Object3D, camera: THREE.PerspectiveCamera, contr
   controls.saveState();
 }
 
-export function SceneModelViewer({ src, poster, prompt }: { src?: string; poster?: string; prompt?: string }) {
+export function SceneModelViewer({ src, poster, prompt, kind = "scene" }: { src?: string; poster?: string; prompt?: string; kind?: "scene" | "character" }) {
   const hostRef = useRef<HTMLDivElement | null>(null);
   const runtimeRef = useRef<ViewerRuntime | null>(null);
   const autoRotateRef = useRef(true);
@@ -211,7 +211,7 @@ export function SceneModelViewer({ src, poster, prompt }: { src?: string; poster
       }
       const message = error instanceof ModelLoadError
         ? error.viewerMessage
-        : "The GLB downloaded successfully but its 3D data could not be decoded. Generate the scene again or download the GLB.";
+        : "The GLB downloaded successfully but its 3D data could not be decoded. Generate the model again or download the GLB.";
       setViewerFailure({ src: modelSrc, message });
     };
 
@@ -254,6 +254,7 @@ export function SceneModelViewer({ src, poster, prompt }: { src?: string; poster
 
   const viewerError = viewerFailure && (!viewerFailure.src || viewerFailure.src === modelSrc) ? viewerFailure.message : "";
   const controlsReady = Boolean(modelSrc && loadedSrc === modelSrc);
+  const noun = kind === "character" ? "character" : "scene";
 
   function toggleAutoRotate() {
     setAutoRotate((current) => {
@@ -311,18 +312,18 @@ export function SceneModelViewer({ src, poster, prompt }: { src?: string; poster
             className="scene-three-host"
             ref={hostRef}
             role="img"
-            aria-label={`Interactive 3D preview for: ${prompt || "generated scene"}`}
+            aria-label={`Interactive 3D preview for: ${prompt || `generated ${noun}`}`}
             style={poster && !controlsReady ? { backgroundImage: `url(${poster})` } : undefined}
           />
         ) : poster ? (
-          <div className="scene-viewer-poster" style={{ backgroundImage: `url(${poster})` }} role="img" aria-label={`Preview image for ${prompt || "generated scene"}`} />
+          <div className="scene-viewer-poster" style={{ backgroundImage: `url(${poster})` }} role="img" aria-label={`Preview image for ${prompt || `generated ${noun}`}`} />
         ) : (
           <div className="scene-viewer-empty">
             <span><Box size={42} /></span>
-            <p><b>Your scene will appear here</b><small>Generate a compact diorama, then orbit, zoom, and download the textured GLB.</small></p>
+            <p><b>Your {noun} will appear here</b><small>Generate a textured model, then orbit, zoom, and download the GLB.</small></p>
           </div>
         )}
-        {modelSrc && loadedSrc !== modelSrc && !viewerError ? <p className="scene-viewer-loading">Loading interactive 3D scene…</p> : null}
+        {modelSrc && loadedSrc !== modelSrc && !viewerError ? <p className="scene-viewer-loading">Loading interactive 3D {noun}…</p> : null}
         {controlsReady ? <div className="scene-viewer-live"><span /> LIVE 3D</div> : null}
         {controlsReady ? <div className="scene-viewer-help"><Move3D size={13} /> Left-drag to rotate · wheel to zoom · right-drag to pan</div> : null}
         {viewerError ? <div className="scene-viewer-error" role="alert"><span>{viewerError}</span><button type="button" onClick={retryModel}>Retry 3D view</button></div> : null}

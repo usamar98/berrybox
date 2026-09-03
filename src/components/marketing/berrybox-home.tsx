@@ -30,11 +30,12 @@ const features = [
     icon: UserRound,
     number: "02",
     title: "AI 3D Character Generator",
-    copy: "Shape original textured heroes with silhouette, style, pose, and animation direction.",
-    status: "COMING SOON",
-    active: false,
+    copy: "Shape original full-body characters with controlled silhouette, visual style, pose, and PBR materials.",
+    status: "ACTIVE",
+    active: true,
     image: "/creator-media/character-generator.jpg",
     imageAlt: "Skyfall Heroes warrior cover artwork",
+    href: "/ai-3d-character-generator",
   },
   {
     icon: Cuboid,
@@ -240,7 +241,7 @@ export function BerryBoxHome() {
         <section className="bb-section bb-skills" id="features">
           <div className="bb-shell">
             <div className="bb-feature-heading">
-              <SectionHeading eyebrow="FOUR CREATOR TOOLS" title="Four engines. One creative universe." copy="The scene workflow is live. Character, template, and complete game generation continue on the roadmap." />
+              <SectionHeading eyebrow="FOUR CREATOR TOOLS" title="Four engines. One creative universe." copy="Scene and character generation are live. Template and complete game generation continue on the roadmap." />
               <div className="bb-feature-heading-count"><strong>04</strong><span>AI CREATOR<br />SYSTEMS</span></div>
             </div>
             <div className="bb-feature-showcase">

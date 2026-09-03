@@ -59,12 +59,14 @@ async function downloadBounded(source: string, maxBytes: number) {
   throw new SceneStorageError("Meshy returned too many asset redirects.");
 }
 
-export async function saveSceneAssets(input: { ownerId: string; jobId: string; modelUrl: string; thumbnailUrl?: string }) {
+async function saveGeneratedAssets(input: { ownerId: string; jobId: string; modelUrl: string; thumbnailUrl?: string }, kind: "scene" | "character") {
   if (!process.env.BLOB_READ_WRITE_TOKEN) throw new SceneStorageError("Private Blob storage is not configured.");
   const config = sceneConfig();
   const model = await downloadBounded(input.modelUrl, config.maxModelBytes);
   validateGlb(model.bytes);
-  const modelPath = `3d-scenes/${input.ownerId}/${input.jobId}/scene.glb`;
+  const folder = kind === "character" ? "3d-characters" : "3d-scenes";
+  const filename = kind === "character" ? "character" : "scene";
+  const modelPath = `${folder}/${input.ownerId}/${input.jobId}/${filename}.glb`;
   const savedModel = await put(modelPath, model.bytes, {
     access: "private",
     contentType: "model/gltf-binary",
@@ -78,7 +80,7 @@ export async function saveSceneAssets(input: { ownerId: string; jobId: string; m
     const thumbnail = await downloadBounded(input.thumbnailUrl, config.maxThumbnailBytes);
     thumbnailMime = /^image\/(?:png|jpeg|webp)$/i.test(thumbnail.contentType) ? thumbnail.contentType : "image/png";
     const extension = thumbnailMime === "image/jpeg" ? "jpg" : thumbnailMime.split("/")[1];
-    thumbnailPath = `3d-scenes/${input.ownerId}/${input.jobId}/thumbnail.${extension}`;
+    thumbnailPath = `${folder}/${input.ownerId}/${input.jobId}/thumbnail.${extension}`;
     await put(thumbnailPath, thumbnail.bytes, {
       access: "private",
       contentType: thumbnailMime,
@@ -88,6 +90,14 @@ export async function saveSceneAssets(input: { ownerId: string; jobId: string; m
   }
 
   return { modelPath: savedModel.pathname, modelSizeBytes: model.bytes.byteLength, thumbnailPath, thumbnailMime };
+}
+
+export function saveSceneAssets(input: { ownerId: string; jobId: string; modelUrl: string; thumbnailUrl?: string }) {
+  return saveGeneratedAssets(input, "scene");
+}
+
+export function saveCharacterAssets(input: { ownerId: string; jobId: string; modelUrl: string; thumbnailUrl?: string }) {
+  return saveGeneratedAssets(input, "character");
 }
 
 export async function readSceneAsset(pathname: string, range?: string) {

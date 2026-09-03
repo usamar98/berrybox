@@ -19,14 +19,15 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://berrybox.local"),
   title: {
-    default: "BerryBox - AI 3D Scene Generator",
+    default: "BerryBox - AI 3D Creation Tools",
     template: "%s | BerryBox",
   },
   description:
-    "Create compact textured 3D scenes from prompts, explore them interactively, and download private GLB results.",
+    "Create textured 3D scenes and original characters from prompts, explore them interactively, and download private GLB results.",
   keywords: [
     "AI 3D generator",
     "3D scene generator",
+    "3D character generator",
     "text to 3D",
     "GLB viewer",
     "BerryBox",
@@ -39,7 +40,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "BerryBox",
     description:
-      "Describe a compact scene, generate a textured GLB asset, and inspect it in an interactive web viewer.",
+      "Generate textured 3D scenes and original characters, then inspect and download private GLB assets.",
     type: "website",
     images: ["/berrybox.png"],
   },
