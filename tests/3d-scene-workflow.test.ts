@@ -224,6 +224,10 @@ test("the scene viewer uses Three.js loaders and direct mouse camera controls", 
   assert.match(viewer, /loader\.setMeshoptDecoder\(MeshoptDecoder\)/);
   assert.match(viewer, /dracoLoader\.setDecoderPath\("\/model-viewer\/draco\/"\)/);
   assert.match(viewer, /ktx2Loader\.setTranscoderPath\("\/model-viewer\/basis\/"\)/);
+  assert.match(viewer, /credentials: "same-origin"/);
+  assert.match(viewer, /response\.arrayBuffer\(\)/);
+  assert.match(viewer, /validateGlbBuffer\(buffer\)/);
+  assert.match(viewer, /loader\.parseAsync\(buffer, ""\)/);
   assert.match(viewer, /controls\.enableDamping = true/);
   assert.match(viewer, /controls\.autoRotate = autoRotate/);
   assert.match(viewer, /Left-drag to rotate/);

@@ -19,6 +19,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     "Cache-Control": "private, max-age=300",
     "Content-Disposition": `inline; filename="berrybox-scene-${job.id.slice(0, 8)}.glb"`,
     "Accept-Ranges": asset.acceptRanges || "bytes",
+    "X-Content-Type-Options": "nosniff",
+    "Cross-Origin-Resource-Policy": "same-origin",
   }, owner.setCookie);
   if (asset.contentRange) headers.set("Content-Range", asset.contentRange);
   if (asset.etag) headers.set("ETag", asset.etag);

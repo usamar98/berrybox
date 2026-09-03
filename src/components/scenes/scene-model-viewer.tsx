@@ -15,6 +15,69 @@ type ViewerRuntime = {
   renderer: THREE.WebGLRenderer;
 };
 
+class ModelLoadError extends Error {
+  constructor(public readonly viewerMessage: string, cause?: unknown) {
+    super(viewerMessage, { cause });
+    this.name = "ModelLoadError";
+  }
+}
+
+function validateGlbBuffer(buffer: ArrayBuffer) {
+  if (buffer.byteLength < 20) {
+    throw new ModelLoadError("The downloaded 3D file is incomplete. Generate the scene again or download the GLB to inspect it.");
+  }
+
+  const header = new DataView(buffer);
+  const magic = header.getUint32(0, true);
+  const version = header.getUint32(4, true);
+  const declaredLength = header.getUint32(8, true);
+  if (magic !== 0x46546c67 || version !== 2) {
+    throw new ModelLoadError("The model endpoint did not return a valid GLB file. Generate the scene again.");
+  }
+  if (declaredLength !== buffer.byteLength) {
+    throw new ModelLoadError("The 3D file was cut off while downloading. Retry the 3D view.");
+  }
+
+  let offset = 12;
+  let chunkIndex = 0;
+  while (offset < buffer.byteLength) {
+    if (offset + 8 > buffer.byteLength) {
+      throw new ModelLoadError("The downloaded GLB has a damaged chunk table. Generate the scene again.");
+    }
+    const chunkLength = header.getUint32(offset, true);
+    const chunkType = header.getUint32(offset + 4, true);
+    if (chunkIndex === 0 && chunkType !== 0x4e4f534a) {
+      throw new ModelLoadError("The downloaded GLB is missing its scene data. Generate the scene again.");
+    }
+    offset += 8 + chunkLength;
+    if (offset > buffer.byteLength) {
+      throw new ModelLoadError("The downloaded GLB contains an incomplete data chunk. Retry the 3D view.");
+    }
+    chunkIndex += 1;
+  }
+  if (offset !== buffer.byteLength || chunkIndex === 0) {
+    throw new ModelLoadError("The downloaded GLB is incomplete. Generate the scene again.");
+  }
+}
+
+async function downloadModel(src: string, signal: AbortSignal) {
+  const response = await fetch(src, {
+    cache: "no-store",
+    credentials: "same-origin",
+    headers: { Accept: "model/gltf-binary, application/octet-stream;q=0.9" },
+    signal,
+  });
+  if (!response.ok) {
+    const message = response.status === 404
+      ? "The saved 3D file is unavailable. Generate the scene again to create a fresh model."
+      : `The 3D file could not be downloaded (HTTP ${response.status}). Retry the 3D view.`;
+    throw new ModelLoadError(message);
+  }
+  const buffer = await response.arrayBuffer();
+  validateGlbBuffer(buffer);
+  return buffer;
+}
+
 function disposeModel(root: THREE.Object3D) {
   root.traverse((object) => {
     const mesh = object as THREE.Mesh;
@@ -72,6 +135,7 @@ export function SceneModelViewer({ src, poster, prompt }: { src?: string; poster
     let disposed = false;
     let loadedModel: THREE.Object3D | undefined;
     let renderer: THREE.WebGLRenderer;
+    const modelRequest = new AbortController();
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(38, 1, 0.01, 1_000);
 
@@ -145,29 +209,37 @@ export function SceneModelViewer({ src, poster, prompt }: { src?: string; poster
         setReload({ src, attempt: 1 });
         return;
       }
-      setViewerFailure({ src: modelSrc, message: "The 3D scene could not be decoded. Retry the viewer or download the GLB." });
+      const message = error instanceof ModelLoadError
+        ? error.viewerMessage
+        : "The GLB downloaded successfully but its 3D data could not be decoded. Generate the scene again or download the GLB.";
+      setViewerFailure({ src: modelSrc, message });
     };
 
-    loader.load(modelSrc, (gltf) => {
-      if (disposed) {
-        disposeModel(gltf.scene);
-        return;
-      }
+    const loadModel = async () => {
       try {
+        const buffer = await downloadModel(modelSrc, modelRequest.signal);
+        const gltf = await loader.parseAsync(buffer, "");
+        if (disposed) {
+          disposeModel(gltf.scene);
+          return;
+        }
         loadedModel = gltf.scene;
         frameModel(loadedModel, camera, controls);
         scene.add(loadedModel);
         setLoadedSrc(modelSrc);
         setViewerFailure(undefined);
       } catch (error) {
-        disposeModel(gltf.scene);
+        if (error instanceof DOMException && error.name === "AbortError") return;
+        if (loadedModel) disposeModel(loadedModel);
         loadedModel = undefined;
         fail(error);
       }
-    }, undefined, fail);
+    };
+    void loadModel();
 
     return () => {
       disposed = true;
+      modelRequest.abort();
       resizeObserver.disconnect();
       renderer.setAnimationLoop(null);
       controls.dispose();
