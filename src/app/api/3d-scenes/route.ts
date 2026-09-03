@@ -13,6 +13,21 @@ const InputSchema = z.object({
 });
 const MAX_BODY_BYTES = 4096;
 
+function logSceneApiError(operation: string, error: unknown) {
+  const value = error as { name?: unknown; message?: unknown; code?: unknown; errno?: unknown; address?: unknown; port?: unknown };
+  const message = typeof value?.message === "string"
+    ? value.message.replace(/postgres(?:ql)?:\/\/[^\s]+/gi, "[database-url]").slice(0, 500)
+    : "Unknown scene API error";
+  console.error(`[3d-scenes:${operation}]`, {
+    name: typeof value?.name === "string" ? value.name : "UnknownError",
+    message,
+    code: typeof value?.code === "string" ? value.code : undefined,
+    errno: typeof value?.errno === "number" ? value.errno : undefined,
+    address: typeof value?.address === "string" ? value.address : undefined,
+    port: typeof value?.port === "number" ? value.port : undefined,
+  });
+}
+
 async function readLimitedJson(request: Request) {
   if (!request.body) return undefined;
   const reader = request.body.getReader();
@@ -51,7 +66,8 @@ export async function GET(request: Request) {
       items: history.jobs.map(toPublicScene),
       pagination: { page, pageSize, total: history.total, pages: Math.max(1, Math.ceil(history.total / pageSize)) },
     }, { headers: withOwnerCookie({ "Cache-Control": "no-store" }, owner.setCookie) });
-  } catch {
+  } catch (error) {
+    logSceneApiError("history", error);
     return Response.json({ error: "Scene history is temporarily unavailable." }, { status: 503, headers: withOwnerCookie(undefined, owner.setCookie) });
   }
 }
@@ -91,6 +107,7 @@ export async function POST(request: Request) {
       const status = error.code === "quota" || error.code === "busy" ? 429 : 503;
       return Response.json({ error: error.message }, { status, headers: status === 429 ? withOwnerCookie({ "Retry-After": "60" }, owner.setCookie) : headers });
     }
+    logSceneApiError("create", error);
     return Response.json({ error: "The scene job could not be created." }, { status: 503, headers });
   }
 }
