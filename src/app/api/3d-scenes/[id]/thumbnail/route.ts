@@ -11,11 +11,13 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   if (!job?.thumbnailBlobPath) return new Response("Not found", { status: 404, headers: withOwnerCookie(undefined, owner.setCookie) });
   const asset = await readSceneAsset(job.thumbnailBlobPath).catch(() => undefined);
   if (!asset) return new Response("Not found", { status: 404, headers: withOwnerCookie(undefined, owner.setCookie) });
+  const headers = withOwnerCookie({
+    "Content-Type": job.thumbnailMime || asset.contentType || "image/png",
+    "Cache-Control": "private, max-age=300",
+    "X-Content-Type-Options": "nosniff",
+  }, owner.setCookie);
+  if (asset.size > 0) headers.set("Content-Length", String(asset.size));
   return new Response(asset.stream, {
-    headers: withOwnerCookie({
-      "Content-Type": job.thumbnailMime || asset.contentType || "image/png",
-      "Content-Length": String(asset.size),
-      "Cache-Control": "private, max-age=300",
-    }, owner.setCookie),
+    headers,
   });
 }

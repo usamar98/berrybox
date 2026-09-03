@@ -235,5 +235,7 @@ test("the scene viewer uses Three.js loaders and direct mouse camera controls", 
   assert.match(viewer, /LIVE 3D/);
   assert.match(modelRoute, /"Content-Range"/);
   assert.match(modelRoute, /status: asset\.contentRange \? 206 : 200/);
+  assert.match(modelRoute, /if \(asset\.size > 0\) headers\.set\("Content-Length"/);
+  assert.doesNotMatch(modelRoute, /"Content-Length": String\(asset\.size\)/);
   assert.match(store, /quota_units_settled > 0/);
 });

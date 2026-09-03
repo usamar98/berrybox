@@ -11,12 +11,14 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   if (!job?.modelBlobPath || job.status !== "ready") return new Response("Not found", { status: 404, headers: withOwnerCookie(undefined, owner.setCookie) });
   const asset = await readSceneAsset(job.modelBlobPath).catch(() => undefined);
   if (!asset) return new Response("Not found", { status: 404, headers: withOwnerCookie(undefined, owner.setCookie) });
+  const headers = withOwnerCookie({
+    "Content-Type": "model/gltf-binary",
+    "Cache-Control": "private, no-store",
+    "Content-Disposition": `attachment; filename="berrybox-scene-${job.id.slice(0, 8)}.glb"`,
+    "X-Content-Type-Options": "nosniff",
+  }, owner.setCookie);
+  if (asset.size > 0) headers.set("Content-Length", String(asset.size));
   return new Response(asset.stream, {
-    headers: withOwnerCookie({
-      "Content-Type": "model/gltf-binary",
-      "Content-Length": String(asset.size),
-      "Cache-Control": "private, no-store",
-      "Content-Disposition": `attachment; filename="berrybox-scene-${job.id.slice(0, 8)}.glb"`,
-    }, owner.setCookie),
+    headers,
   });
 }

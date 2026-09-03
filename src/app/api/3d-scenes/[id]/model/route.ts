@@ -15,13 +15,16 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   if (!asset) return new Response("Not found", { status: 404, headers: withOwnerCookie(undefined, owner.setCookie) });
   const headers = withOwnerCookie({
     "Content-Type": "model/gltf-binary",
-    "Content-Length": String(asset.size),
     "Cache-Control": "private, max-age=300",
     "Content-Disposition": `inline; filename="berrybox-scene-${job.id.slice(0, 8)}.glb"`,
     "Accept-Ranges": asset.acceptRanges || "bytes",
     "X-Content-Type-Options": "nosniff",
     "Cross-Origin-Resource-Policy": "same-origin",
+    "X-BerryBox-Model-Size": String(job.modelSizeBytes || asset.size || 0),
   }, owner.setCookie);
+  // Blob streams may be chunked and report size 0. Sending Content-Length: 0
+  // causes browsers to discard the valid response body before Three.js sees it.
+  if (asset.size > 0) headers.set("Content-Length", String(asset.size));
   if (asset.contentRange) headers.set("Content-Range", asset.contentRange);
   if (asset.etag) headers.set("ETag", asset.etag);
   return new Response(asset.stream, {
