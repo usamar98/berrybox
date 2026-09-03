@@ -189,3 +189,13 @@ test("Hobby deployment uses owner-scoped polling with a daily cron fallback", as
   const client = await readFile("src/components/scenes/scene-generator-page.tsx", "utf8");
   assert.match(client, /method: "POST"/);
 });
+
+test("the scene viewer exposes direct 360-degree camera controls", async () => {
+  const viewer = await readFile("src/components/scenes/scene-model-viewer.tsx", "utf8");
+  assert.match(viewer, /camera-controls/);
+  assert.match(viewer, /viewer\.zoom\(amount\)/);
+  assert.match(viewer, /cameraOrbit = "0deg 75deg 105%"/);
+  assert.match(viewer, /auto-rotate-delay="300"/);
+  assert.match(viewer, /rotation-per-second="32deg"/);
+  assert.match(viewer, /LIVE 3D/);
+});
